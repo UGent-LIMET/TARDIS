@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Case study: targeted metabolite detection using TARDIS in cardiovascular disease • TARDIS</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Case study: targeted metabolite detection using TARDIS in cardiovascular disease">
 </head>
@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TARDIS</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -61,7 +61,7 @@
                         <h4 data-toc-skip class="author">Pablo
 Vangeenderhuysen</h4>
             
-            <h4 data-toc-skip class="date">2025-10-24</h4>
+            <h4 data-toc-skip class="date">2026-06-17</h4>
       
 
       <div class="d-none name"><code>case_study.rmd</code></div>
@@ -141,7 +141,7 @@ and negative ionization, the polarity of interest, the columnn that
 contains the ionization mode and the other columns of interest.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://readxl.tidyverse.org" class="external-link">readxl</a></span><span class="op">)</span></span>
-<span><span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv2</a></span><span class="op">(</span><span class="st">"vignette_data/bio_targets.csv"</span>,sep <span class="op">=</span> <span class="st">","</span><span class="op">)</span></span>
+<span><span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv2</a></span><span class="op">(</span><span class="st">"vignette_data/bio_targets.csv"</span>, sep <span class="op">=</span> <span class="st">","</span><span class="op">)</span></span>
 <span><span class="fu">kableExtra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">input</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <table style="width:100%;" class="table">
 <colgroup>
@@ -322,12 +322,13 @@ function, check the help page: <code><a href="../reference/createTargetList.html
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pablovgd.github.io/TARDIS/">TARDIS</a></span><span class="op">)</span></span>
 <span><span class="va">targets</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/createTargetList.html">createTargetList</a></span><span class="op">(</span><span class="st">"vignette_data/bio_targets.csv"</span>,</span>
-<span>                            pos_pattern <span class="op">=</span> <span class="st">"+"</span>,</span>
-<span>                            neg_pattern <span class="op">=</span> <span class="st">"-"</span>,</span>
-<span>                            polarity <span class="op">=</span> <span class="st">"positive"</span>,</span>
-<span>                            ion_column <span class="op">=</span> <span class="st">"POS"</span>,</span>
-<span>                            columns_of_interest <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ID"</span>, <span class="st">"name"</span>, <span class="st">"mz"</span>, <span class="st">"rt"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu">kableExtra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">targets</span><span class="op">[</span><span class="fl">21</span><span class="op">:</span><span class="fl">26</span>,<span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<span>    pos_pattern <span class="op">=</span> <span class="st">"+"</span>,</span>
+<span>    neg_pattern <span class="op">=</span> <span class="st">"-"</span>,</span>
+<span>    polarity <span class="op">=</span> <span class="st">"positive"</span>,</span>
+<span>    ion_column <span class="op">=</span> <span class="st">"POS"</span>,</span>
+<span>    columns_of_interest <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ID"</span>, <span class="st">"name"</span>, <span class="st">"mz"</span>, <span class="st">"rt"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu">kableExtra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">targets</span><span class="op">[</span><span class="fl">21</span><span class="op">:</span><span class="fl">26</span>, <span class="op">]</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <thead><tr class="header">
 <th align="left"></th>
@@ -389,15 +390,20 @@ vignette</a>.</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/RforMassSpectrometry/MsExperiment" class="external-link">MsExperiment</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/RforMassSpectrometry/MsIO" class="external-link">MsIO</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/RforMassSpectrometry/MsBackendMetaboLights" class="external-link">MsBackendMetaboLights</a></span><span class="op">)</span></span>
-<span><span class="va">param</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/MsIO/man/MetaboLightsParam.html" class="external-link">MetaboLightsParam</a></span><span class="op">(</span>mtblsId <span class="op">=</span> <span class="st">"MTBLS8735"</span>,</span>
-<span>                           assayName <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"a_MTBLS8735_LC-MS_positive_"</span>,</span>
-<span>                                              <span class="st">"hilic_metabolite_profiling.txt"</span><span class="op">)</span>,</span>
-<span>                           filePattern <span class="op">=</span> <span class="st">".mzML"</span><span class="op">)</span></span>
+<span><span class="va">param</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/MsIO/man/MetaboLightsParam.html" class="external-link">MetaboLightsParam</a></span><span class="op">(</span></span>
+<span>    mtblsId <span class="op">=</span> <span class="st">"MTBLS8735"</span>,</span>
+<span>    assayName <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span></span>
+<span>        <span class="st">"a_MTBLS8735_LC-MS_positive_"</span>,</span>
+<span>        <span class="st">"hilic_metabolite_profiling.txt"</span></span>
+<span>    <span class="op">)</span>,</span>
+<span>    filePattern <span class="op">=</span> <span class="st">".mzML"</span></span>
+<span><span class="op">)</span></span>
 <span><span class="va">lcms1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/MsIO/man/saveMsObject.html" class="external-link">readMsObject</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/MsExperiment/man/MsExperiment.html" class="external-link">MsExperiment</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>                      <span class="va">param</span>,</span>
-<span>                      keepOntology <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>                      keepProtocol <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>                      simplify <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<span>    <span class="va">param</span>,</span>
+<span>    keepOntology <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>    keepProtocol <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>    simplify <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">lcms1</span></span>
 <span><span class="co">#&gt; Object of class MsExperiment </span></span>
@@ -407,24 +413,28 @@ vignette</a>.</p>
 <span><span class="co">#&gt;   - spectra: 10 sample(s) to 17210 element(s).</span></span></code></pre></div>
 <p>Simplifying the sampleData:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/MsExperiment/man/MsExperiment.html" class="external-link">sampleData</a></span><span class="op">(</span><span class="va">lcms1</span><span class="op">)</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sample_name"</span>, <span class="st">"spectraOrigin"</span>,</span>
-<span>                                <span class="st">"metabolite_asssignment_file"</span>,</span>
-<span>                                <span class="st">"source_name"</span>,</span>
-<span>                                <span class="st">"organism"</span>,</span>
-<span>                                <span class="st">"blood_sample_type"</span>,</span>
-<span>                                <span class="st">"type"</span>, <span class="st">"age"</span>, <span class="st">"unit"</span>, <span class="st">"phenotype"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/MsExperiment/man/MsExperiment.html" class="external-link">sampleData</a></span><span class="op">(</span><span class="va">lcms1</span><span class="op">)</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"sample_name"</span>, <span class="st">"spectraOrigin"</span>,</span>
+<span>    <span class="st">"metabolite_asssignment_file"</span>,</span>
+<span>    <span class="st">"source_name"</span>,</span>
+<span>    <span class="st">"organism"</span>,</span>
+<span>    <span class="st">"blood_sample_type"</span>,</span>
+<span>    <span class="st">"type"</span>, <span class="st">"age"</span>, <span class="st">"unit"</span>, <span class="st">"phenotype"</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Add "QC" to the phenotype of the QC samples</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/MsExperiment/man/MsExperiment.html" class="external-link">sampleData</a></span><span class="op">(</span><span class="va">lcms1</span><span class="op">)</span><span class="op">$</span><span class="va">phenotype</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/MsExperiment/man/MsExperiment.html" class="external-link">sampleData</a></span><span class="op">(</span><span class="va">lcms1</span><span class="op">)</span><span class="op">$</span><span class="va">sample_name</span> <span class="op">==</span> <span class="st">"POOL"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="st">"QC"</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/MsExperiment/man/MsExperiment.html" class="external-link">sampleData</a></span><span class="op">(</span><span class="va">lcms1</span><span class="op">)</span><span class="op">$</span><span class="va">sample_name</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/MsExperiment/man/MsExperiment.html" class="external-link">sampleData</a></span><span class="op">(</span><span class="va">lcms1</span><span class="op">)</span><span class="op">$</span><span class="va">sample_name</span> <span class="op">==</span> <span class="st">"POOL"</span> <span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"POOL1"</span>, <span class="st">"POOL2"</span>, <span class="st">"POOL3"</span>, <span class="st">"POOL4"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/MsExperiment/man/MsExperiment.html" class="external-link">sampleData</a></span><span class="op">(</span><span class="va">lcms1</span><span class="op">)</span><span class="op">$</span><span class="va">sample_name</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/MsExperiment/man/MsExperiment.html" class="external-link">sampleData</a></span><span class="op">(</span><span class="va">lcms1</span><span class="op">)</span><span class="op">$</span><span class="va">sample_name</span> <span class="op">==</span> <span class="st">"POOL"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"POOL1"</span>, <span class="st">"POOL2"</span>, <span class="st">"POOL3"</span>, <span class="st">"POOL4"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/MsExperiment/man/MsExperiment.html" class="external-link">sampleData</a></span><span class="op">(</span><span class="va">lcms1</span><span class="op">)</span><span class="op">$</span><span class="va">type</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/MsExperiment/man/MsExperiment.html" class="external-link">sampleData</a></span><span class="op">(</span><span class="va">lcms1</span><span class="op">)</span><span class="op">$</span><span class="va">type</span> <span class="op">==</span> <span class="st">"pool"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="st">"QC"</span></span>
 <span></span>
 <span><span class="co">#  Add injection index column</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/MsExperiment/man/MsExperiment.html" class="external-link">sampleData</a></span><span class="op">(</span><span class="va">lcms1</span><span class="op">)</span><span class="op">$</span><span class="va">injection_index</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/MsExperiment/man/MsExperiment.html" class="external-link">sampleData</a></span><span class="op">(</span><span class="va">lcms1</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/MsExperiment/man/MsExperiment.html" class="external-link">sampleData</a></span><span class="op">(</span><span class="va">lcms1</span><span class="op">)</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"spectraOrigin"</span>,</span>
-<span>                     <span class="st">"phenotype"</span>, <span class="st">"sample_name"</span>, <span class="st">"type"</span>,</span>
-<span>                     <span class="st">"injection_index"</span><span class="op">)</span><span class="op">]</span> <span class="op">|&gt;</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/MsExperiment/man/MsExperiment.html" class="external-link">sampleData</a></span><span class="op">(</span><span class="va">lcms1</span><span class="op">)</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"spectraOrigin"</span>,</span>
+<span>    <span class="st">"phenotype"</span>, <span class="st">"sample_name"</span>, <span class="st">"type"</span>,</span>
+<span>    <span class="st">"injection_index"</span></span>
+<span><span class="op">)</span><span class="op">]</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu">kableExtra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span>format <span class="op">=</span> <span class="st">"pipe"</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <colgroup>
@@ -542,21 +552,23 @@ documentation</a>.</p>
 <li>L-Serine (13C3, 99%; 15N, 99%)</li>
 </ul>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">subset</span> <span class="op">&lt;-</span> <span class="va">targets</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">17</span>,<span class="fl">14</span>,<span class="fl">7</span>,<span class="fl">8</span>,<span class="fl">15</span>,<span class="fl">21</span><span class="op">:</span><span class="fl">26</span><span class="op">)</span>,<span class="op">]</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">subset</span> <span class="op">&lt;-</span> <span class="va">targets</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">17</span>, <span class="fl">14</span>, <span class="fl">7</span>, <span class="fl">8</span>, <span class="fl">15</span>, <span class="fl">21</span><span class="op">:</span><span class="fl">26</span><span class="op">)</span>, <span class="op">]</span></span></code></pre></div>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tardisPeaks.html">tardisPeaks</a></span><span class="op">(</span> lcmsData <span class="op">=</span> <span class="va">lcms1</span>, </span>
-<span>                        dbData <span class="op">=</span> <span class="va">subset</span>,</span>
-<span>                        mass_range <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>                        polarity <span class="op">=</span> <span class="st">"positive"</span>,</span>
-<span>                        output_directory <span class="op">=</span> <span class="st">"vignette_data/output/case/screening/"</span>,</span>
-<span>                        batch_positions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">10</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>                        QC_pattern <span class="op">=</span> <span class="st">"QC"</span>,</span>
-<span>                        int_std_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">20</span><span class="op">)</span>,</span>
-<span>                        screening_mode <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Performing retention time correction using 5 peak groups.</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tardisPeaks.html">tardisPeaks</a></span><span class="op">(</span></span>
+<span>    lcmsData <span class="op">=</span> <span class="va">lcms1</span>,</span>
+<span>    dbData <span class="op">=</span> <span class="va">subset</span>,</span>
+<span>    mass_range <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>    polarity <span class="op">=</span> <span class="st">"positive"</span>,</span>
+<span>    output_directory <span class="op">=</span> <span class="st">"vignette_data/output/case/screening/"</span>,</span>
+<span>    batch_positions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">10</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    QC_pattern <span class="op">=</span> <span class="st">"QC"</span>,</span>
+<span>    int_std_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">20</span><span class="op">)</span>,</span>
+<span>    screening_mode <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; Performing retention time alignment using 5 anchor peaks.</span></span></code></pre></div>
 <p>The resulting EICs are saved in the output folder and can be
 inspected.</p>
-<p><img src="vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_7.png" width="49%"><img src="vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_8.png" width="49%"><img src="vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_14.png" width="49%"><img src="vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_15.png" width="49%"><img src="vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_17.png" width="49%"><img src="vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_21.png" width="49%"><img src="vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_22.png" width="49%"><img src="vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_23.png" width="49%"><img src="vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_24.png" width="49%"><img src="vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_25.png" width="49%"><img src="vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_26.png" width="49%"></p>
+<p><img src="vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_7.png" class="r-plt" alt="" width="49%"><img src="vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_8.png" class="r-plt" alt="" width="49%"><img src="vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_14.png" class="r-plt" alt="" width="49%"><img src="vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_15.png" class="r-plt" alt="" width="49%"><img src="vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_17.png" class="r-plt" alt="" width="49%"><img src="vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_21.png" class="r-plt" alt="" width="49%"><img src="vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_22.png" class="r-plt" alt="" width="49%"><img src="vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_23.png" class="r-plt" alt="" width="49%"><img src="vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_24.png" class="r-plt" alt="" width="49%"><img src="vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_25.png" class="r-plt" alt="" width="49%"><img src="vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_26.png" class="r-plt" alt="" width="49%"></p>
 <p>Based on the EICs we can see that detection, RT alignment and
 integration of target peaks in QC runs were successful. However, the
 signal of component 26, a non-annotated biomarker, is of remarkably
@@ -569,16 +581,18 @@ absent in the other QC runs.</p>
 <p>Now we can perform peak detection in all our runs by setting
 <code>screening_mode =  FALSE</code>.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tardisPeaks.html">tardisPeaks</a></span><span class="op">(</span> lcmsData <span class="op">=</span> <span class="va">lcms1</span>, </span>
-<span>                        dbData <span class="op">=</span> <span class="va">subset</span>,</span>
-<span>                        mass_range <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>                        polarity <span class="op">=</span> <span class="st">"positive"</span>,</span>
-<span>                        output_directory <span class="op">=</span> <span class="st">"vignette_data/output/case/"</span>,</span>
-<span>                        batch_positions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">10</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>                        QC_pattern <span class="op">=</span> <span class="st">"QC"</span>,</span>
-<span>                        int_std_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">20</span><span class="op">)</span>,</span>
-<span>                        screening_mode <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Performing retention time correction using 5 peak groups.</span></span>
+<code class="sourceCode R"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tardisPeaks.html">tardisPeaks</a></span><span class="op">(</span></span>
+<span>    lcmsData <span class="op">=</span> <span class="va">lcms1</span>,</span>
+<span>    dbData <span class="op">=</span> <span class="va">subset</span>,</span>
+<span>    mass_range <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>    polarity <span class="op">=</span> <span class="st">"positive"</span>,</span>
+<span>    output_directory <span class="op">=</span> <span class="st">"vignette_data/output/case/"</span>,</span>
+<span>    batch_positions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">10</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    QC_pattern <span class="op">=</span> <span class="st">"QC"</span>,</span>
+<span>    int_std_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">20</span><span class="op">)</span>,</span>
+<span>    screening_mode <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; Performing retention time alignment using 5 anchor peaks.</span></span>
 <span><span class="co">#&gt; Aligning sample number 2 against subset ... OK</span></span>
 <span><span class="co">#&gt; Aligning sample number 3 against subset ... OK</span></span>
 <span><span class="co">#&gt; Aligning sample number 5 against subset ... OK</span></span>
@@ -626,12 +640,12 @@ metrics for each target in the QC runs.</p>
 <tbody>
 <tr class="odd">
 <td align="left">14</td>
-<td align="right">16525.69812</td>
+<td align="right">16550.633</td>
 <td align="right">18002.5842</td>
 <td align="right">16543.549</td>
 <td align="right">17354.10495</td>
-<td align="right">19069.943</td>
-<td align="right">17914.6009</td>
+<td align="right">19096.568</td>
+<td align="right">17914.601</td>
 <td align="right">19826.2410</td>
 <td align="right">20773.350</td>
 <td align="right">21403.3610</td>
@@ -639,63 +653,63 @@ metrics for each target in the QC runs.</p>
 </tr>
 <tr class="even">
 <td align="left">15</td>
-<td align="right">17633.56844</td>
-<td align="right">18678.1921</td>
+<td align="right">17702.727</td>
+<td align="right">18787.2227</td>
 <td align="right">16358.943</td>
 <td align="right">20086.53309</td>
-<td align="right">19134.836</td>
-<td align="right">11104.8497</td>
-<td align="right">18041.7061</td>
-<td align="right">17538.437</td>
-<td align="right">19005.3145</td>
-<td align="right">18484.4783</td>
+<td align="right">19177.793</td>
+<td align="right">11104.850</td>
+<td align="right">18093.4052</td>
+<td align="right">17585.089</td>
+<td align="right">19031.7096</td>
+<td align="right">18606.9053</td>
 </tr>
 <tr class="odd">
 <td align="left">17</td>
-<td align="right">9696.06094</td>
-<td align="right">10009.2589</td>
-<td align="right">10862.924</td>
-<td align="right">9731.80795</td>
+<td align="right">9696.061</td>
+<td align="right">10043.8735</td>
+<td align="right">11226.918</td>
+<td align="right">10081.11645</td>
 <td align="right">10586.717</td>
-<td align="right">11158.9709</td>
-<td align="right">10348.6157</td>
+<td align="right">11158.971</td>
+<td align="right">10528.2346</td>
 <td align="right">10773.937</td>
-<td align="right">10188.5909</td>
-<td align="right">10082.6647</td>
+<td align="right">10307.5951</td>
+<td align="right">10316.8433</td>
 </tr>
 <tr class="even">
 <td align="left">21</td>
 <td align="right">NA</td>
 <td align="right">3573.0464</td>
-<td align="right">3157.537</td>
+<td align="right">2990.853</td>
 <td align="right">47.03151</td>
 <td align="right">4260.996</td>
 <td align="right">NA</td>
-<td align="right">1498.4509</td>
+<td align="right">2190.4639</td>
 <td align="right">2006.222</td>
-<td align="right">1746.3844</td>
-<td align="right">1378.9488</td>
+<td align="right">1747.0690</td>
+<td align="right">1744.6098</td>
 </tr>
 <tr class="odd">
 <td align="left">22</td>
-<td align="right">827.47100</td>
-<td align="right">79504.3672</td>
-<td align="right">116928.037</td>
+<td align="right">827.471</td>
+<td align="right">79999.0135</td>
+<td align="right">117235.118</td>
 <td align="right">2204.12719</td>
-<td align="right">166453.150</td>
-<td align="right">827.6966</td>
-<td align="right">36758.7755</td>
-<td align="right">40199.217</td>
-<td align="right">39582.0053</td>
-<td align="right">39544.2507</td>
+<td align="right">166585.610</td>
+<td align="right">1153.845</td>
+<td align="right">36766.4234</td>
+<td align="right">40371.478</td>
+<td align="right">40079.2350</td>
+<td align="right">39741.2307</td>
 </tr>
 <tr class="even">
 <td align="left">23</td>
-<td align="right">28.60398</td>
-<td align="right">384.4481</td>
+<td align="right">91.981</td>
+<td align="right">980.2109</td>
 <td align="right">632.872</td>
 <td align="right">NA</td>
-<td align="right">1976.859</td>
+<td align="right">1981.873</td>
 <td align="right">NA</td>
 <td align="right">660.7771</td>
 <td align="right">536.172</td>
@@ -759,12 +773,12 @@ metrics for each target in the QC runs.</p>
 </tr>
 <tr class="even">
 <td align="left">15</td>
-<td align="right">18267.4839</td>
+<td align="right">18329.2773</td>
 <td align="right">10256.7736</td>
-<td align="right">12.89131</td>
-<td align="right">0.9476993</td>
+<td align="right">13.48757</td>
+<td align="right">0.9436183</td>
 <td align="right">151.52398</td>
-<td align="right">21.25</td>
+<td align="right">22.50</td>
 <td align="left">15</td>
 <td align="left">L-Phenylalanine (13C9, 99%; 15N, 99%)</td>
 <td align="right">176.1135</td>
@@ -775,12 +789,12 @@ metrics for each target in the QC runs.</p>
 </tr>
 <tr class="odd">
 <td align="left">17</td>
-<td align="right">10348.4520</td>
+<td align="right">10481.6524</td>
 <td align="right">6464.6150</td>
-<td align="right">19.84894</td>
-<td align="right">0.9757596</td>
+<td align="right">12.29799</td>
+<td align="right">0.8172832</td>
 <td align="right">179.14857</td>
-<td align="right">17.50</td>
+<td align="right">26.25</td>
 <td align="left">17</td>
 <td align="left">L-Serine (13C3, 99%; 15N, 99%)</td>
 <td align="right">110.0570</td>
@@ -791,12 +805,12 @@ metrics for each target in the QC runs.</p>
 </tr>
 <tr class="even">
 <td align="left">21</td>
-<td align="right">1657.5015</td>
-<td align="right">918.1422</td>
-<td align="right">12.93310</td>
-<td align="right">0.9439880</td>
+<td align="right">1922.0912</td>
+<td align="right">906.1764</td>
+<td align="right">12.22469</td>
+<td align="right">0.8899200</td>
 <td align="right">34.89898</td>
-<td align="right">15.75</td>
+<td align="right">19.75</td>
 <td align="left">21</td>
 <td align="left">Unknown_1</td>
 <td align="right">182.0749</td>
@@ -807,10 +821,10 @@ metrics for each target in the QC runs.</p>
 </tr>
 <tr class="odd">
 <td align="left">22</td>
-<td align="right">39021.0621</td>
+<td align="right">39239.5918</td>
 <td align="right">27834.8161</td>
-<td align="right">30.26548</td>
-<td align="right">0.9887586</td>
+<td align="right">31.63514</td>
+<td align="right">0.9806625</td>
 <td align="right">32.87623</td>
 <td align="right">14.00</td>
 <td align="left">22</td>
@@ -843,10 +857,10 @@ metrics for each target in the QC runs.</p>
 peak_cor and points over the peak) and are saved into the output folder
 in .csv format.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">maxint</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="st">"vignette_data/output/case/int_table.csv"</span>,check.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">[</span>,<span class="op">-</span><span class="fl">1</span><span class="op">]</span></span>
-<span><span class="va">SNR</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="st">"vignette_data/output/case/snr_table.csv"</span>,check.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">[</span>,<span class="op">-</span><span class="fl">1</span><span class="op">]</span></span>
-<span><span class="va">peak_cor</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="st">"vignette_data/output/case/peakcor_table.csv"</span>,check.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">[</span>,<span class="op">-</span><span class="fl">1</span><span class="op">]</span></span>
-<span><span class="va">pop</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="st">"vignette_data/output/case/pop_table.csv"</span>,check.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">[</span>,<span class="op">-</span><span class="fl">1</span><span class="op">]</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">maxint</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="st">"vignette_data/output/case/int_table.csv"</span>, check.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">[</span>, <span class="op">-</span><span class="fl">1</span><span class="op">]</span></span>
+<span><span class="va">SNR</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="st">"vignette_data/output/case/snr_table.csv"</span>, check.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">[</span>, <span class="op">-</span><span class="fl">1</span><span class="op">]</span></span>
+<span><span class="va">peak_cor</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="st">"vignette_data/output/case/peakcor_table.csv"</span>, check.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">[</span>, <span class="op">-</span><span class="fl">1</span><span class="op">]</span></span>
+<span><span class="va">pop</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="st">"vignette_data/output/case/pop_table.csv"</span>, check.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">[</span>, <span class="op">-</span><span class="fl">1</span><span class="op">]</span></span></code></pre></div>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">kableExtra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">pop</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
@@ -879,7 +893,7 @@ in .csv format.</p>
 <tbody>
 <tr class="odd">
 <td align="right">14</td>
-<td align="right">21</td>
+<td align="right">22</td>
 <td align="right">22</td>
 <td align="right">26</td>
 <td align="right">25</td>
@@ -892,42 +906,42 @@ in .csv format.</p>
 </tr>
 <tr class="even">
 <td align="right">15</td>
-<td align="right">23</td>
-<td align="right">22</td>
+<td align="right">24</td>
+<td align="right">24</td>
 <td align="right">25</td>
 <td align="right">23</td>
 <td align="right">24</td>
 <td align="right">23</td>
-<td align="right">21</td>
-<td align="right">21</td>
+<td align="right">25</td>
+<td align="right">20</td>
 <td align="right">22</td>
-<td align="right">21</td>
+<td align="right">23</td>
 </tr>
 <tr class="odd">
 <td align="right">17</td>
 <td align="right">16</td>
-<td align="right">20</td>
-<td align="right">14</td>
-<td align="right">15</td>
-<td align="right">15</td>
-<td align="right">14</td>
-<td align="right">17</td>
-<td align="right">18</td>
+<td align="right">23</td>
 <td align="right">19</td>
-<td align="right">16</td>
+<td align="right">18</td>
+<td align="right">15</td>
+<td align="right">14</td>
+<td align="right">30</td>
+<td align="right">18</td>
+<td align="right">33</td>
+<td align="right">24</td>
 </tr>
 <tr class="even">
 <td align="right">21</td>
 <td align="right">NA</td>
 <td align="right">13</td>
-<td align="right">20</td>
+<td align="right">14</td>
 <td align="right">7</td>
 <td align="right">13</td>
 <td align="right">NA</td>
-<td align="right">13</td>
+<td align="right">27</td>
 <td align="right">21</td>
-<td align="right">17</td>
-<td align="right">12</td>
+<td align="right">16</td>
+<td align="right">15</td>
 </tr>
 <tr class="odd">
 <td align="right">22</td>
@@ -936,19 +950,19 @@ in .csv format.</p>
 <td align="right">13</td>
 <td align="right">13</td>
 <td align="right">14</td>
-<td align="right">9</td>
+<td align="right">13</td>
+<td align="right">14</td>
+<td align="right">14</td>
 <td align="right">15</td>
-<td align="right">14</td>
-<td align="right">14</td>
 <td align="right">13</td>
 </tr>
 <tr class="even">
 <td align="right">23</td>
-<td align="right">7</td>
-<td align="right">12</td>
+<td align="right">11</td>
+<td align="right">22</td>
 <td align="right">11</td>
 <td align="right">NA</td>
-<td align="right">23</td>
+<td align="right">25</td>
 <td align="right">NA</td>
 <td align="right">15</td>
 <td align="right">12</td>
@@ -974,28 +988,28 @@ AUC’s of our biomarkers:</p>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="co"># Limit input data to biomarkers and not ISTD targets</span></span>
-<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="va">AUC</span><span class="op">[</span><span class="fl">4</span><span class="op">:</span><span class="fl">9</span>,<span class="op">]</span></span>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="va">AUC</span><span class="op">[</span><span class="fl">4</span><span class="op">:</span><span class="fl">9</span>, <span class="op">]</span></span>
 <span><span class="va">sampledata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/MsExperiment/man/MsExperiment.html" class="external-link">sampleData</a></span><span class="op">(</span><span class="va">lcms1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co"># Remove "FILES/" prefix</span></span>
 <span><span class="va">sampledata</span><span class="op">$</span><span class="va">spectraOrigin</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">gsub</a></span><span class="op">(</span><span class="st">"FILES/"</span>, <span class="st">""</span>, <span class="va">sampledata</span><span class="op">$</span><span class="va">spectraOrigin</span><span class="op">)</span></span>
 <span><span class="co"># Ensure row names correspond to Feature ID</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span></span>
-<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">[</span>, <span class="op">-</span><span class="fl">1</span><span class="op">]</span>  <span class="co"># Remove the feature ID column for PCA</span></span>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">[</span>, <span class="op">-</span><span class="fl">1</span><span class="op">]</span> <span class="co"># Remove the feature ID column for PCA</span></span>
 <span><span class="co"># Transpose the data so that samples are rows and features are columns</span></span>
 <span><span class="va">data_t</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co"># Impute NA values</span></span>
 <span><span class="va">na_unidis</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">z</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">na</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">z</span><span class="op">)</span></span>
 <span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="va">na</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>        <span class="va">min</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">z</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span>        <span class="va">z</span><span class="op">[</span><span class="va">na</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">na</span><span class="op">)</span>, min <span class="op">=</span> <span class="va">min</span><span class="op">/</span><span class="fl">2</span>, max <span class="op">=</span> <span class="va">min</span><span class="op">)</span></span>
+<span>        <span class="va">min</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">z</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>        <span class="va">z</span><span class="op">[</span><span class="va">na</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">na</span><span class="op">)</span>, min <span class="op">=</span> <span class="va">min</span> <span class="op">/</span> <span class="fl">2</span>, max <span class="op">=</span> <span class="va">min</span><span class="op">)</span></span>
 <span>    <span class="op">}</span></span>
 <span>    <span class="va">z</span></span>
 <span><span class="op">}</span></span>
 <span><span class="va">tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">data_t</span>, MARGIN <span class="op">=</span> <span class="fl">1</span>, <span class="va">na_unidis</span><span class="op">)</span></span>
 <span><span class="va">data_t</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">tmp</span><span class="op">)</span></span>
 <span><span class="co"># Perform PCA</span></span>
-<span><span class="va">pca_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/prcomp.html" class="external-link">prcomp</a></span><span class="op">(</span><span class="va">data_t</span>, scale. <span class="op">=</span> <span class="cn">TRUE</span>,center <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">pca_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/prcomp.html" class="external-link">prcomp</a></span><span class="op">(</span><span class="va">data_t</span>, scale. <span class="op">=</span> <span class="cn">TRUE</span>, center <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co"># Extract PCA scores</span></span>
 <span><span class="va">pca_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">pca_result</span><span class="op">$</span><span class="va">x</span><span class="op">)</span></span>
 <span><span class="va">pca_df</span><span class="op">$</span><span class="va">Sample</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">pca_df</span><span class="op">)</span></span>
@@ -1003,13 +1017,15 @@ AUC’s of our biomarkers:</p>
 <span><span class="va">pca_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">pca_df</span>, <span class="va">sampledata</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Sample"</span> <span class="op">=</span> <span class="st">"spectraOrigin"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co"># Plot PCA</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">pca_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">PC1</span>, y <span class="op">=</span> <span class="va">PC2</span>, color <span class="op">=</span> <span class="va">phenotype</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">3</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"PCA"</span>,</span>
-<span>       x <span class="op">=</span> <span class="st">"Principal Component 1"</span>,</span>
-<span>       y <span class="op">=</span> <span class="st">"Principal Component 2"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_color_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"red"</span>, <span class="st">"blue"</span>, <span class="st">"green"</span><span class="op">)</span><span class="op">)</span> <span class="co"># Customize colors if needed</span></span></code></pre></div>
-<p><img src="case_study_files/figure-html/unnamed-chunk-15-1.png" width="700"></p>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">3</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>        title <span class="op">=</span> <span class="st">"PCA"</span>,</span>
+<span>        x <span class="op">=</span> <span class="st">"Principal Component 1"</span>,</span>
+<span>        y <span class="op">=</span> <span class="st">"Principal Component 2"</span></span>
+<span>    <span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_color_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"red"</span>, <span class="st">"blue"</span>, <span class="st">"green"</span><span class="op">)</span><span class="op">)</span> <span class="co"># Customize colors if needed</span></span></code></pre></div>
+<p><img src="case_study_files/figure-html/unnamed-chunk-15-1.png" class="r-plt" alt="" width="700"></p>
 <p>Results are as expected:</p>
 <ul>
 <li><p>QC samples cluster together, indicating little technical variance
@@ -1023,28 +1039,28 @@ phenotype as compared to the healthy controls.</p></li>
 <p>Disregarding component nr 26, the PCA looks like:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Limit input data to biomarkers and not ISTD targets</span></span>
-<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="va">AUC</span><span class="op">[</span><span class="fl">4</span><span class="op">:</span><span class="fl">8</span>,<span class="op">]</span></span>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="va">AUC</span><span class="op">[</span><span class="fl">4</span><span class="op">:</span><span class="fl">8</span>, <span class="op">]</span></span>
 <span><span class="va">sampledata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/MsExperiment/man/MsExperiment.html" class="external-link">sampleData</a></span><span class="op">(</span><span class="va">lcms1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co"># Remove "FILES/" prefix</span></span>
 <span><span class="va">sampledata</span><span class="op">$</span><span class="va">spectraOrigin</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">gsub</a></span><span class="op">(</span><span class="st">"FILES/"</span>, <span class="st">""</span>, <span class="va">sampledata</span><span class="op">$</span><span class="va">spectraOrigin</span><span class="op">)</span></span>
 <span><span class="co"># Ensure row names correspond to Feature ID</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span></span>
-<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">[</span>, <span class="op">-</span><span class="fl">1</span><span class="op">]</span>  <span class="co"># Remove the feature ID column for PCA</span></span>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">[</span>, <span class="op">-</span><span class="fl">1</span><span class="op">]</span> <span class="co"># Remove the feature ID column for PCA</span></span>
 <span><span class="co"># Transpose the data so that samples are rows and features are columns</span></span>
 <span><span class="va">data_t</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co"># Impute NA values</span></span>
 <span><span class="va">na_unidis</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">z</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">na</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">z</span><span class="op">)</span></span>
 <span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="va">na</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>        <span class="va">min</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">z</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span>        <span class="va">z</span><span class="op">[</span><span class="va">na</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">na</span><span class="op">)</span>, min <span class="op">=</span> <span class="va">min</span><span class="op">/</span><span class="fl">2</span>, max <span class="op">=</span> <span class="va">min</span><span class="op">)</span></span>
+<span>        <span class="va">min</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">z</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>        <span class="va">z</span><span class="op">[</span><span class="va">na</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">na</span><span class="op">)</span>, min <span class="op">=</span> <span class="va">min</span> <span class="op">/</span> <span class="fl">2</span>, max <span class="op">=</span> <span class="va">min</span><span class="op">)</span></span>
 <span>    <span class="op">}</span></span>
 <span>    <span class="va">z</span></span>
 <span><span class="op">}</span></span>
 <span><span class="va">tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">data_t</span>, MARGIN <span class="op">=</span> <span class="fl">1</span>, <span class="va">na_unidis</span><span class="op">)</span></span>
 <span><span class="va">data_t</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">tmp</span><span class="op">)</span></span>
 <span><span class="co"># Perform PCA</span></span>
-<span><span class="va">pca_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/prcomp.html" class="external-link">prcomp</a></span><span class="op">(</span><span class="va">data_t</span>, scale. <span class="op">=</span> <span class="cn">TRUE</span>,center <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">pca_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/prcomp.html" class="external-link">prcomp</a></span><span class="op">(</span><span class="va">data_t</span>, scale. <span class="op">=</span> <span class="cn">TRUE</span>, center <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co"># Extract PCA scores</span></span>
 <span><span class="va">pca_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">pca_result</span><span class="op">$</span><span class="va">x</span><span class="op">)</span></span>
 <span><span class="va">pca_df</span><span class="op">$</span><span class="va">Sample</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">pca_df</span><span class="op">)</span></span>
@@ -1052,13 +1068,15 @@ phenotype as compared to the healthy controls.</p></li>
 <span><span class="va">pca_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">pca_df</span>, <span class="va">sampledata</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Sample"</span> <span class="op">=</span> <span class="st">"spectraOrigin"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co"># Plot PCA</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">pca_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">PC1</span>, y <span class="op">=</span> <span class="va">PC2</span>, color <span class="op">=</span> <span class="va">phenotype</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">3</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"PCA"</span>,</span>
-<span>       x <span class="op">=</span> <span class="st">"Principal Component 1"</span>,</span>
-<span>       y <span class="op">=</span> <span class="st">"Principal Component 2"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_color_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"blue"</span>, <span class="st">"red"</span>, <span class="st">"green"</span><span class="op">)</span><span class="op">)</span> <span class="co"># Customize colors if needed</span></span></code></pre></div>
-<p><img src="case_study_files/figure-html/unnamed-chunk-16-1.png" width="700"></p>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">3</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>        title <span class="op">=</span> <span class="st">"PCA"</span>,</span>
+<span>        x <span class="op">=</span> <span class="st">"Principal Component 1"</span>,</span>
+<span>        y <span class="op">=</span> <span class="st">"Principal Component 2"</span></span>
+<span>    <span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_color_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"blue"</span>, <span class="st">"red"</span>, <span class="st">"green"</span><span class="op">)</span><span class="op">)</span> <span class="co"># Customize colors if needed</span></span></code></pre></div>
+<p><img src="case_study_files/figure-html/unnamed-chunk-16-1.png" class="r-plt" alt="" width="700"></p>
 </div>
 <div class="section level3">
 <h3 id="differential-abundance-analysis">Differential abundance analysis<a class="anchor" aria-label="anchor" href="#differential-abundance-analysis"></a>
@@ -1070,18 +1088,18 @@ between the two phenotype groups.</p>
 values.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Limit input data to biomarkers and not ISTD targets</span></span>
-<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="va">AUC</span><span class="op">[</span><span class="fl">4</span><span class="op">:</span><span class="fl">8</span>,<span class="op">]</span></span>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="va">AUC</span><span class="op">[</span><span class="fl">4</span><span class="op">:</span><span class="fl">8</span>, <span class="op">]</span></span>
 <span><span class="va">sampledata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/MsExperiment/man/MsExperiment.html" class="external-link">sampleData</a></span><span class="op">(</span><span class="va">lcms1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">sampledata</span><span class="op">$</span><span class="va">spectraOrigin</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">gsub</a></span><span class="op">(</span><span class="st">"FILES/"</span>, <span class="st">""</span>, <span class="va">sampledata</span><span class="op">$</span><span class="va">spectraOrigin</span><span class="op">)</span></span>
 <span><span class="co"># Ensure row names correspond to Feature ID</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span></span>
-<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">[</span>, <span class="op">-</span><span class="fl">1</span><span class="op">]</span>  <span class="co"># Remove the feature ID column for PCA</span></span>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">[</span>, <span class="op">-</span><span class="fl">1</span><span class="op">]</span> <span class="co"># Remove the feature ID column for PCA</span></span>
 <span><span class="va">data_t</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">na_unidis</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">z</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">na</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">z</span><span class="op">)</span></span>
 <span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="va">na</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>        <span class="va">min</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">z</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span>        <span class="va">z</span><span class="op">[</span><span class="va">na</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">na</span><span class="op">)</span>, min <span class="op">=</span> <span class="va">min</span><span class="op">/</span><span class="fl">2</span>, max <span class="op">=</span> <span class="va">min</span><span class="op">)</span></span>
+<span>        <span class="va">min</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">z</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>        <span class="va">z</span><span class="op">[</span><span class="va">na</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">na</span><span class="op">)</span>, min <span class="op">=</span> <span class="va">min</span> <span class="op">/</span> <span class="fl">2</span>, max <span class="op">=</span> <span class="va">min</span><span class="op">)</span></span>
 <span>    <span class="op">}</span></span>
 <span>    <span class="va">z</span></span>
 <span><span class="op">}</span></span>
@@ -1091,16 +1109,16 @@ values.</p>
 <span><span class="co"># Merge with sample metadata</span></span>
 <span><span class="va">data_t</span><span class="op">$</span><span class="va">Sample</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">data_t</span><span class="op">)</span></span>
 <span><span class="va">data_t</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">data_t</span>, <span class="va">sampledata</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Sample"</span> <span class="op">=</span> <span class="st">"spectraOrigin"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">data_t</span> <span class="op">&lt;-</span> <span class="va">data_t</span><span class="op">[</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">data_t</span><span class="op">$</span><span class="va">phenotype</span> <span class="op">==</span> <span class="st">"QC"</span><span class="op">)</span>,<span class="op">]</span></span></code></pre></div>
+<span><span class="va">data_t</span> <span class="op">&lt;-</span> <span class="va">data_t</span><span class="op">[</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">data_t</span><span class="op">$</span><span class="va">phenotype</span> <span class="op">==</span> <span class="st">"QC"</span><span class="op">)</span>, <span class="op">]</span></span></code></pre></div>
 <p>Next we visualize the log2 transformed abudances of each feature in
 each group using boxplots.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">boxdata</span> <span class="op">&lt;-</span> <span class="va">data_t</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>,<span class="fl">15</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="va">boxdata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html" class="external-link">pivot_longer</a></span><span class="op">(</span><span class="va">boxdata</span>,cols <span class="op">=</span> <span class="op">!</span><span class="va">phenotype</span>,names_to <span class="op">=</span> <span class="st">"feature"</span>,values_to <span class="op">=</span> <span class="st">"abundance"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">boxdata</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">feature</span>, y<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log2</a></span><span class="op">(</span><span class="va">abundance</span><span class="op">)</span>, fill<span class="op">=</span><span class="va">phenotype</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
+<code class="sourceCode R"><span><span class="va">boxdata</span> <span class="op">&lt;-</span> <span class="va">data_t</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="fl">15</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">boxdata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html" class="external-link">pivot_longer</a></span><span class="op">(</span><span class="va">boxdata</span>, cols <span class="op">=</span> <span class="op">!</span><span class="va">phenotype</span>, names_to <span class="op">=</span> <span class="st">"feature"</span>, values_to <span class="op">=</span> <span class="st">"abundance"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">boxdata</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">feature</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log2</a></span><span class="op">(</span><span class="va">abundance</span><span class="op">)</span>, fill <span class="op">=</span> <span class="va">phenotype</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_boxplot.html" class="external-link">geom_boxplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_fill_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"blue"</span>,<span class="st">"red"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="case_study_files/figure-html/unnamed-chunk-18-1.png" width="700"></p>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_fill_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"blue"</span>, <span class="st">"red"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="case_study_files/figure-html/unnamed-chunk-18-1.png" class="r-plt" alt="" width="700"></p>
 <p>To test the differences for each biomarker, we use to
 <code>wilcox.test</code> function. From the boxplots above, we known
 that the biomarkers are underrepresented in the CVD phenotype, hence, we
@@ -1109,11 +1127,11 @@ use the <code>alternative = "less"</code> option in the
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pres</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Feature <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">data_t</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span>, p_value <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">feature_values</span> <span class="op">&lt;-</span> <span class="va">data_t</span><span class="op">[</span>, <span class="va">i</span><span class="op">]</span></span>
-<span>  <span class="va">group1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log2</a></span><span class="op">(</span><span class="va">feature_values</span><span class="op">[</span><span class="va">data_t</span><span class="op">$</span><span class="va">phenotype</span> <span class="op">==</span> <span class="st">"CVD"</span><span class="op">]</span><span class="op">)</span></span>
-<span>  <span class="va">group2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log2</a></span><span class="op">(</span><span class="va">feature_values</span><span class="op">[</span><span class="va">data_t</span><span class="op">$</span><span class="va">phenotype</span> <span class="op">==</span> <span class="st">"CTR"</span><span class="op">]</span><span class="op">)</span></span>
-<span>  <span class="va">pres</span><span class="op">$</span><span class="va">p_value</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/wilcox.test.html" class="external-link">wilcox.test</a></span><span class="op">(</span><span class="va">group1</span>, <span class="va">group2</span>,alternative <span class="op">=</span> <span class="st">"less"</span><span class="op">)</span><span class="op">$</span><span class="va">p.value</span></span>
-<span>  <span class="op">}</span></span>
+<span>    <span class="va">feature_values</span> <span class="op">&lt;-</span> <span class="va">data_t</span><span class="op">[</span>, <span class="va">i</span><span class="op">]</span></span>
+<span>    <span class="va">group1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log2</a></span><span class="op">(</span><span class="va">feature_values</span><span class="op">[</span><span class="va">data_t</span><span class="op">$</span><span class="va">phenotype</span> <span class="op">==</span> <span class="st">"CVD"</span><span class="op">]</span><span class="op">)</span></span>
+<span>    <span class="va">group2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log2</a></span><span class="op">(</span><span class="va">feature_values</span><span class="op">[</span><span class="va">data_t</span><span class="op">$</span><span class="va">phenotype</span> <span class="op">==</span> <span class="st">"CTR"</span><span class="op">]</span><span class="op">)</span></span>
+<span>    <span class="va">pres</span><span class="op">$</span><span class="va">p_value</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/wilcox.test.html" class="external-link">wilcox.test</a></span><span class="op">(</span><span class="va">group1</span>, <span class="va">group2</span>, alternative <span class="op">=</span> <span class="st">"less"</span><span class="op">)</span><span class="op">$</span><span class="va">p.value</span></span>
+<span><span class="op">}</span></span>
 <span><span class="va">pres</span><span class="op">$</span><span class="va">adj_p_value</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">p.adjust</a></span><span class="op">(</span><span class="va">pres</span><span class="op">$</span><span class="va">p_value</span>, method <span class="op">=</span> <span class="st">"fdr"</span><span class="op">)</span></span>
 <span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">pres</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
@@ -1171,7 +1189,7 @@ in the CVD samples.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>

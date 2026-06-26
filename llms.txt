@@ -29,7 +29,7 @@ In R, run:
     if (!require("BiocManager", quietly = TRUE))
         install.packages("BiocManager")
 
-    BiocManager::install("pablovgd/TARDIS",build_vignettes = FALSE,
+    BiocManager::install("UGent-LIMET/TARDIS",build_vignettes = FALSE,
       dependencies=TRUE)
 
 Since the package contains some example data, connection timeout is

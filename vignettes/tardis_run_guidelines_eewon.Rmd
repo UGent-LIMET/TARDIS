@@ -1,0 +1,196 @@
+---
+title: "TARDIS 2.8.0 run guidelines (July 2026)"
+author: Eewon Tai <Eewon.Tai@UGent.be>
+output: html_notebook
+---
+
+TARDIS v2.8.0 should be downloaded, installed, loaded, and ran in the following order. The basic idea is to 1) download package from Github repository 2) install & load it via devtools 3) run createTargetList and tardisPeaks in sequence. More details are given below.
+
+**Important: Before starting, you should have updated R and Rstudio to the current versions. If they are too old, the following steps will not work. It should be recent enough to produce no big errors.**
+
+## Download package from Github repository
+
+1.  Go to the repository page: <https://github.com/UGent-LIMET/TARDIS/tree/revision_eewon>
+2.  On the top right: Click on Code -\> Local -\> Download ZIP
+3.  Wait for the download to complete
+4.  Go to that zip file location, unzip it in a specific directory of your choice (this is where your TARDIS code is)
+5.  Now we have a folder of the TARDIS package.
+
+## Install and load all necessary packages
+
+First, we need to install all necessary packages. After installing each of them, we load them. Important: run it at the beginning every time you start TARDIS. This block has to be run first before all the other code in this script.
+
+```{r}
+if (!require("pbapply")) install.packages("pbapply")
+library(pbapply)
+if (!require("parallel")) install.packages("parallel")
+library(parallel)
+if (!require("tidyr")) install.packages("tidyr")
+library(tidyr)
+if (!require("dplyr")) install.packages("dplyr")
+library(dplyr)
+if (!require("xcms")) install.packages("xcms")
+library(xcms)
+if (!require("Spectra")) install.packages("Spectra")
+library(Spectra)
+if (!require("diptest")) install.packages("diptest")
+library(diptest)
+if (!require("peakRAM")) install.packages("peakRAM")
+library(peakRAM)
+if (!require("DBI")) install.packages("DBI")
+library(DBI)
+if (!require("RSQLite")) install.packages("RSQLite")
+library(RSQLite)
+if (!require("devtools")) install.packages("devtools")
+library(devtools)
+if (!require("BiocManager")) {
+  install.packages("BiocManager")
+}
+if (!require("MsBackendSql")) BiocManager::install("MsBackendSql")
+library(MsBackendSql)
+```
+
+Important: if you encounter error messages (not warnings) while doing this, you should not ignore them! Try to find out why that error occurred, fix the error, and re-run the script until the error disappears, which means it ran successfully. You need to have every package here installed and loaded successfully before proceeding to the next step.
+
+## Install & load TARDIS package via devtools
+
+Next, we install and load the TARDIS package with devtools. This is the preferred way due to its simplicity and speed.
+
+1.  If you are installing TARDIS the first time in your computer: just install and load it.
+
+```{r}
+# install
+devtools::install("C:/Users/TARDIS-v2.8.0/")  # example path to the TARDIS folder (created in the first step of this script)
+# load
+devtools::load_all("C:/Users/TARDIS-v2.8.0/")  # example path to the TARDIS folder (created in the first step of this script)
+```
+
+2.  If you have changed the code in the TARDIS package, or you want to use another version of the package instead of the already existing one: you need to remove the existing TARDIS package first and then install & load the next one, to avoid conflict. If you don't remove the existing TARDIS package, sometimes the code just runs the old code.
+
+```{r}
+remove.packages("TARDIS")
+# install
+devtools::install("C:/Users/TARDIS-v2.8.0/")  # example path to the TARDIS folder (created in the first step of this script)
+# load
+devtools::load_all("C:/Users/TARDIS-v2.8.0/")  # example path to the TARDIS folder (created in the first step of this script)
+```
+
+If you have installed the package once in your computer (devtools::install), it will not go away unless you explicitly delete it. It stays in the C drive library folder. Installing is only necessary once at the beginning. Then, you only need to load the package (devtools::load_all) to use it from next time.
+
+Important: if you encounter error messages (not warnings) while doing this, you should not ignore them! Try to find out why that error occurred, fix the error, and re-run the script until the error disappears, which means it ran successfully. The TARDIS package must be installed and loaded correctly for the following code to work.
+
+## Run createTargetList function (creating a target compound dataframe)
+
+To demonstrate, I will use the TARDIS v2.8.0 code, in screening mode, with default parameters, and 6 cores.
+
+The following code should be run, where the parameter settings should be modified for each task. Details about each of the parameters are given as comments.
+
+For more reference, have a look here: <https://pablovgd.github.io/TARDIS/reference/createTargetList.html>
+
+```{r}
+# polar positive screening mode
+# create target list
+dbData <- createTargetList(input_directory_targets = "A:/shares/260622_Results_Environage_polar-positive.xlsx", # an example file path for compound information
+                           pos_pattern = "+",   # recognize "+" as the positive compounds
+                           neg_pattern = "-",   # recognize "-" as the negative compounds
+                           polarity = "positive",   # positive or negative?
+                           ion_column = "Ion",   # name of the ion column (has to match perfectly, including case)
+                           columns_of_interest = c("ID", "name", "mz", "RT"))   # name of the columns of interest (has to match perfectly, including case)
+```
+
+After running the above code, there should be a dbData object at the upper right 'Environment' panel of RStudio. Click on it to find out how it looks. It should be a dataframe that contains the information about the target compounds.
+
+## Run tardisPeaks function (running the main code)
+
+To demonstrate, I will use the TARDIS v2.8.0 code, in screening mode, with default parameters, and 6 cores.
+
+The following code should be run, where the parameter settings should be modified for each task. Details about each of the parameters are given as comments.
+
+For more reference, have a look here: <https://pablovgd.github.io/TARDIS/reference/tardisPeaks.html> (this page describes the tardisPeaks function in the previously developed version; in the new version some new parameters were introduced–see table below)
+
+```{r}
+# run main code
+tardisPeaks(file_path = "A:/shares/mzML/Polar/", # an example input directory (contains mzML files)
+            lcmsData = NULL,
+            dbData = dbData,  # get the dbData object created above, from createTargetList, that contains the compound information dataframe
+            ppm = 3,   # ppm
+            rtdev = 18,   # retention time deviation
+            mass_range = c(50, 800),   # mass range (here: 50-800 Da)
+            polarity = "positive",   # positive or negative polarity
+            output_directory = "A:/shares/TARDIS_polar_ENV_pos/screening/", # an example output directory
+            plots_samples = TRUE,   # do you want sample plots? TRUE or FALSE
+            plots_QC = TRUE,   # do you want QC plots? TRUE or FALSE
+            diagnostic_plots = TRUE,   # do you want diagnostic plots? TRUE or FALSE
+            batch_positions = list(c(1,632)),  # change '632' into the number of .mzML files in the input directory (exclude files with other formats)
+            QC_pattern = "QC",   # the pattern in the names of the QC mzML files, so here: every mzML file with "QC" in the name indicates a QC file.
+            sample_pattern = "",
+            rt_alignment = TRUE,   # are we going to align retention time or not?
+            int_std_id = c("ID1115", "ID1576", "ID1577", "ID1583", "ID1750", "ID2188", "ID2206", "ID2207"),  # the ID of internal standards (the value of the "ID" column in dbData)
+            screening_mode = TRUE,  # change this to FALSE in non-screening mode
+            smoothing = TRUE,   # are we going to do peak smoothing or not?
+            max_int_filter = NULL,  # disregard peaks with a maximum intensity lower than this value
+            num_cores = 6,  # number of CPU cores to use for parallelization (recommended: the total number of CPU cores - 2)
+            rt_mode = "default",   # set as "default" for now, since other rt alignment methods have critical errors
+            pval_cutoff = 0.05,    # default, for diptest
+            std = TRUE,            # are you going to plot standards or not? TRUE or FALSE
+            STD_pattern ="STD",    # the pattern in the names of the standard mzML files, so here: every mzML file with "STD" in the name indicates a standard file.
+            smoothing_order = 3)   # default, for Savitsky-Golay filter
+        
+```
+
+### More details on the added parameters to tardisPeaks function
+
+#### num_cores
+
+Number of CPU cores to use for parallelization. The value should be 1 or higher (integer). When it is set to 1, no parallelization is done, when it is set to another number, parallelization is done with that number of cores. Needs to be determined specifically for each run and for each computer. Recommended value: the 'total number of CPU cores' - 2. See 'Notes' section below.
+
+#### rt_mode
+
+Retention time alignment mode. For now, it should be set to "default", since other RT alignment methods have errors.
+
+#### pval_cutoff
+
+Diptest p value cutoff for determining multimodality. The value can be e.g. 0.01, 0.05, 0.1, 0.5, 0.9, 0.99 (anything between 0 and 1). Used in cases where many peaks overlap. Lower value integrates the whole overlapping peak region, higher value integrates a part of the region as one peak.
+
+#### std
+
+Whether or not to generate STD plots. Value: TRUE/FALSE. Plots of standards are only generated in screening phase and thus irrelevant in non-screening phase.
+
+#### STD_pattern
+
+The name pattern in standards mzML files to identify them. Default value: "STD". Can be changed, but must be specific and not too short or commonplace, so that the code can recognize the standard files by the pattern and not also other files that also contain the pattern.
+
+#### smoothing_order
+
+The order of the polynomial curve fitted to the data. Values can be e.g. 2,3,4,5,6 (integer). Lower value does more general smoothing, higher value does more local smoothing. If you want a simple curve similar to a gaussian, use a lower value.
+
+## Clean the environment
+
+If you will run more code later, it is recommended to always clean the code environment after each run. Best to clean before each code run too, just in case.
+
+1.  Clear loose (unresolved) parallel connections (that are left behind after the parallel processing part of the code)
+2.  Remove objects in memory (deletes all objects you have created in your current R session)
+3.  Garbage collection (release memory of objects that are no longer used)
+4.  Remove all .sqlite files created in dataHandling function when running tardisPeaks function (otherwise, the code run afterwards will not work due to conflict in SQL connection)
+
+```{r}
+# close all unresolved parallel connections
+closeAllConnections()
+# remove objects in memory
+rm(list = ls())
+# garbage collection
+gc()
+
+# delete all .sqlite files
+# List all temporary files ending in .sqlite
+temp_dir_files <- list.files(tempdir(), pattern = "\\.sqlite$", full.names = TRUE)
+# Delete them from your hard drive
+file.remove(temp_dir_files)
+```
+
+# Notes
+
+1.  The num_cores parameter is recommended to be set as the 'total number of cpu cores - 2', to leave out 2 cores that may be used for running other processes in the computer. Don't use all the CPU cores! Then the computer might crash. Be careful, when you use num_cores parameter as the 'total number of cpu cores - 2', and the intensive code is running with big datasets and using a lot of CPU/memory/disk in a computer, it is best to limit the usage of that computer for other cases, including yourself or others. If other programs or tasks are running, they may interfere with the code run. If you are unsure, maybe decrease the num_cores to for example, 'total number of cpu cores - 4'. This will make it slower, but it will leave more resources available in the computer, for usage in other tasks. It would be a good idea to experiment with different values and find out what is best for yourself, you can always cancel the code run if the computer is using too much CPU/memory. You can monitor them by using 'Task Manager' (in Windows). The num_cores parameter should be set specific to each computer and each code that will run.
+2.  If possible, using local folders for input and output is much faster than using the folders in the network shares. The input and output over the (unstable) network is a major source for slower runtime. If needed, you can first use local folders for input/output and then copy the whole results to the network shares, that would be faster than running entirely on the shares.
+3.  Most common errors that I have made: incorrect directory paths, incorrect 'batch_positions' (should match the number of .mzML files exactly, don't include files with other formats)
+4.  Generally speaking, in programming, you should be careful about uppercase/lowercase, '-' and '\_', and the exact names of the parameter values. For me, these are the most common and frustrating errors that appear in error messages.

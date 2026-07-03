@@ -44,6 +44,7 @@
 #' @import MsExperiment
 #' @import xcms
 #' @importFrom Spectra MsBackendMzR
+#' @importFrom Spectra MsBackendSql
 #' @importFrom Spectra filterMzRange
 #' @importFrom Spectra filterEmptySpectra
 #' @importFrom Spectra filterDataOrigin
@@ -364,11 +365,25 @@ dataHandling <- function(files, string, QC_pattern, polarity){
     sampleData(data)$type <- "study"
     sampleData(data)$type[grep(pattern = QC_pattern, files)] <- QC_pattern
   }
-  sp <- Spectra(
+
+  # --- CHANGED: build a temp SQLite DB, populate it once, use OfflineSql ---
+  db_path <- tempfile(fileext = ".sqlite")
+  sp_init <- Spectra(
     experimentFiles(data)[["mzML"]],
-    backend  = MsBackendMzR()
-    #BPPARAM  = SnowParam(workers = 1L)
+    backend  = MsBackendMzR(),
+    BPPARAM  = SnowParam(workers = 1L)
   )
+  sp <- setBackend(sp_init,
+                   MsBackendOfflineSql(),
+                   drv    = SQLite(),          # ← driver passed to setBackend
+                   dbname = db_path,           # ← dbname passed to setBackend
+                   BPPARAM = SnowParam(workers = 1L))
+
+  # sp <- Spectra(
+  #   experimentFiles(data)[["mzML"]],
+  #   backend  = MsBackendMzR()
+  #   #BPPARAM  = SnowParam(workers = 1L)
+  # )
   if (polarity == "positive") {
     spectra(data) <- filterPolarity(sp, 1)
   } else if (polarity == "negative") {
@@ -556,9 +571,9 @@ tardisPeaks <-
           #library(S4Vectors)
           library(pbapply)
           library(parallel)
-          #library(MsBackendSql)      # <-- ADD (provides MsBackendOfflineSql)
-          #library(DBI)               # <-- ADD (SQLite connection dep)
-          #library(RSQLite)           # <-- ADD
+          library(MsBackendSql)      # <-- ADD (provides MsBackendOfflineSql)
+          library(DBI)               # <-- ADD (SQLite connection dep)
+          library(RSQLite)           # <-- ADD
           library(diptest)
         })
 
@@ -942,6 +957,7 @@ tardisPeaks <-
         print("csv file saved!")
 
       }
+      stopCluster(cl)  # stop parallel processes
 
     } else {  # if screening mode is false
       ## Loop over the batches
@@ -1012,9 +1028,9 @@ tardisPeaks <-
             #library(S4Vectors)
             library(pbapply)
             library(parallel)
-            #library(MsBackendSql)      # <-- ADD (provides MsBackendOfflineSql)
-            #library(DBI)               # <-- ADD (SQLite connection dep)
-            #library(RSQLite)           # <-- ADD
+            library(MsBackendSql)      # <-- ADD (provides MsBackendOfflineSql)
+            library(DBI)               # <-- ADD (SQLite connection dep)
+            library(RSQLite)           # <-- ADD
             library(diptest)
           })
 

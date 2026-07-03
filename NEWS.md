@@ -1,5 +1,8 @@
 # TARDIS 2.0
 
+## Changes in 2.8.0
+- changed Spectra backend from MsBackendMzR to MsBackendOfflineSql, since the v2.7.1 code didn't run successfully in lab computers (used too much memory)
+
 ## Changes in 2.7.1
 - fixed bug: account for different column names in createTargetList input
 

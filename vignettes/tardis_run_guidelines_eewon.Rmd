@@ -1,0 +1,65 @@
+---
+title: "TARDIS 1.1.2 run guidelines (August 2026)"
+author: Eewon Tai <Eewon.Tai@UGent.be>
+output: html_notebook
+---
+
+TARDIS v1.1.2 should be downloaded, installed, loaded, and ran in the following order. The basic idea is to 1) download package from Github repository 2) install & load it via devtools 3) run createTargetList and tardisPeaks in sequence. More details are given below.
+
+## Download package from Github repository
+
+1.  Go to the repository page: <https://github.com/UGent-LIMET/TARDIS/tree/main>
+2.  On the top right: Click on Code -\> Local -\> Download ZIP
+3.  Wait for the download to complete
+4.  Go to that zip file location, unzip it in a specific directory of your choice (this is where your TARDIS code is)
+5.  Now we have a folder of the TARDIS package.
+
+## Install and load all necessary packages
+
+First, we need to install all necessary packages. After installing each of them, we load them. Important: run it at the beginning every time you start TARDIS. This block has to be run first before all the other code in this script.
+
+```{r}
+if (!require("tidyr")) install.packages("tidyr")
+library(tidyr)
+if (!require("dplyr")) install.packages("dplyr")
+library(dplyr)
+if (!require("xcms")) install.packages("xcms")
+library(xcms)
+if (!require("Spectra")) install.packages("Spectra")
+library(Spectra)
+if (!require("devtools")) install.packages("devtools")
+library(devtools)
+```
+
+Important: if you encounter error messages (not warnings) while doing this, you should not ignore them! Try to find out why that error occurred, fix the error, and re-run the script until the error disappears, which means it ran successfully. You need to have every package here installed and loaded successfully before proceeding to the next step.
+
+## Install & load TARDIS package via devtools
+
+Next, we install and load the TARDIS package with devtools. This is the preferred way due to its simplicity and speed.
+
+1.  If you are installing TARDIS the first time in your computer: just install and load it.
+
+```{r}
+# install
+devtools::install("C:/Users/TARDIS-v1.1.2/")  # example path to the TARDIS folder (created in the first step of this script)
+# load
+devtools::load_all("C:/Users/TARDIS-v1.1.2/")  # example path to the TARDIS folder (created in the first step of this script)
+```
+
+2.  If you have changed the code in the TARDIS package, or you want to use another version of the package instead of the already existing one: you need to remove the existing TARDIS package first and then install & load the next one, to avoid conflict. If you don't remove the existing TARDIS package, sometimes the code just runs the old code.
+
+```{r}
+remove.packages("TARDIS")
+# install
+devtools::install("C:/Users/TARDIS-v1.1.2/")  # example path to the TARDIS folder (created in the first step of this script)
+# load
+devtools::load_all("C:/Users/TARDIS-v1.1.2/")  # example path to the TARDIS folder (created in the first step of this script)
+```
+
+If you have installed the package once in your computer (devtools::install), it will not go away unless you explicitly delete it. It stays in the C drive library folder. Installing is only necessary once at the beginning. Then, you only need to load the package (devtools::load_all) to use it from next time.
+
+Important: if you encounter error messages (not warnings) while doing this, you should not ignore them! Try to find out why that error occurred, fix the error, and re-run the script until the error disappears, which means it ran successfully.
+
+## Run code
+
+- Run createTargetList function and tardisPeaks function in the same way as TARDIS v1.1.0 by Dr. Pablo Vangeenderhuysen, described in more detail here: <https://pablovgd.github.io/TARDIS/>

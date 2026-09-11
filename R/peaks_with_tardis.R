@@ -110,14 +110,7 @@ smoothingSG <- function(tr,
 
 # a function to check if a peak is valid
 checkValidPeak <- function(x, y, rt, int, border, sample_name, compound_info, results) {
-  # idx <- border[1L]:border[2L]
-  # x <- rt[idx]
-  # y <- int[idx]
-  # rt_list <- c(rt_list, list(rt))
-  # int_list <- c(int_list, list(int))
-  # x_list <- c(x_list, list(x))
-  # y_list <- c(y_list, list(y))
-  
+
   if (length(unique(y)) > 1) {
     auc <- trapz(x, y)
     pop <- length(x)
@@ -314,49 +307,7 @@ tardisPeaks <-
                     y_list <- list()
                     for (i in 1:length(sample_names)) {
                         sample_name <- unlist(sample_names[i])
-                        # filtered_spectra <- TARDIS:::filterSingle(
-                        #     spectra_QC,
-                        #     unique(dataOrigin(spectra_QC))[i],
-                        #     internal_standards_rt[j, ],
-                        #     internal_standards_mz[j, ]
-                        # )
-                        # eic <- extract_eic(filtered_spectra)
-                        """
-                        eic <- filterSingle_extractEIC(
-                          spectra_QC,
-                          unique(dataOrigin(spectra_QC))[i],
-                          internal_standards_rt[j, ],
-                          internal_standards_mz[j, ]
-                        )
-                        rt <- eic[, 1L]
-                        int <- eic[, 2L]
-                        # NA intensities are set to zero --> should change this so only NA's
-                        # at the edges get changed to zero, so the ones IN the peak will be
-                        # imputed
-                        int[which(is.na(int))] <- 0
-                        # To determine the borders more easily, smoothing is applied
-                        # if intensity length is under 7, lower filter length
-                        # to odd number <= intensity length
-                        if (length(int) < 7) {
-                            if (length(int) %% 2 == 0) {
-                                fl <- length(int) - 1
-                            } else {
-                                fl <- length(int)
-                            }
-                        } else {
-                            fl <- 7
-                        }
-                        smoothed <- sgolayfilt(int, p = 3, n = fl)
-                        if (smoothing == TRUE) {
-                            int <- smoothed
-                            int[int < 0] <- 0
-                        }
-                        # Border detection
-                        border <-
-                            find_peak_points(rt, smoothed, dbData_std$tr[j],
-                                .check = FALSE
-                            )
-                        """
+                        
                         res <- smoothingSG(
                           dbData_std$tr[j],
                           unique(dataOrigin(spectra_QC))[i],
@@ -404,42 +355,7 @@ tardisPeaks <-
                 y_list <- list()
                 for (i in 1:length(sample_names)) {
                     sample_name <- unlist(sample_names[i])
-                    # filtered_spectra <- filterSingle(
-                    #     spectra_QC,
-                    #     unique(dataOrigin(spectra_QC))[i],
-                    #     rtRanges[j, ],
-                    #     mzRanges[j, ]
-                    # )
-                    # eic <- extract_eic(filtered_spectra)
-                    """
-                    eic <- filterSingle_extractEIC(
-                          spectra_QC,
-                          unique(dataOrigin(spectra_QC))[i],
-                          rtRanges[j, ],
-                          mzRanges[j, ]
-                      )
-                    rt <- eic[, 1L]
-                    int <- eic[, 2L]
-                    int[which(is.na(int))] <- 0
-                    # if intensity length is under 7, lower filter length
-                    # to odd number <= intensity length
-                    if (length(int) < 7) {
-                        if (length(int) %% 2 == 0) {
-                            fl <- length(int) - 1
-                        } else {
-                            fl <- length(int)
-                        }
-                    } else {
-                        fl <- 7
-                    }
-                    smoothed <- sgolayfilt(int, p = 3, n = fl)
-                    if (smoothing == TRUE) {
-                        int <- smoothed
-                        int[int < 0] <- 0
-                    }
-                    border <-
-                        find_peak_points(rt, smoothed, dbData$tr[j], .check = FALSE)
-                    """
+                    
                     res <- smoothingSG(
                       dbData$tr[j],
                       unique(dataOrigin(spectra_QC))[i],
@@ -459,46 +375,7 @@ tardisPeaks <-
                     int_list <- c(int_list, list(int))
                     x_list <- c(x_list, list(x))
                     y_list <- c(y_list, list(y))
-                    """
-                    ## Check if there are at least two unique values for the component
-                    if (length(unique(y)) > 1) {
-                        auc <- trapz(x, y)
-                        pop <- length(x)
-                        qscore <- qscoreCalculator(x, y)
-                        compound_info <- dbData[j, ]
-                        results_screening <- rbind(
-                            results_screening,
-                            data.frame(
-                                Component = compound_info$ID,
-                                Sample = sample_name,
-                                AUC = auc,
-                                MaxInt = int[border[3L]],
-                                SNR = qscore[1],
-                                peak_cor = qscore[2],
-                                foundRT = rt[border[3L]],
-                                pop = pop,
-                                compound_info
-                            )
-                        )
-                    } else {
-                        compound_info <- dbData[j, ]
-                        # Append results to the data frame with compound information
-                        results_screening <- rbind(
-                            results_screening,
-                            data.frame(
-                                Component = compound_info$ID,
-                                Sample = sample_name,
-                                AUC = NA,
-                                MaxInt = NA,
-                                SNR = NA,
-                                peak_cor = NA,
-                                foundRT = NA,
-                                pop = NA,
-                                compound_info
-                            )
-                        )
-                    }
-                    """
+                    
                     results_screening <- checkValidPeak(x, y, rt, int, border, sample_name, dbData[j, ], results_screening)
                 }
                 # Create and save the plot for the current component
@@ -623,44 +500,7 @@ tardisPeaks <-
                         y_list <- list()
                         for (i in 1:length(sample_names)) {
                             sample_name <- unlist(sample_names[i])
-                            # spectra_filtered <- filterSingle(
-                            #     spectra_QC,
-                            #     unique(dataOrigin(spectra_QC))[i],
-                            #     internal_standards_rt[j, ],
-                            #     internal_standards_mz[j, ]
-                            # )
-                            # eic <- extract_eic(spectra_filtered)
-                            """
-                            eic <- filterSingle_extractEIC(
-                              spectra_QC,
-                              unique(dataOrigin(spectra_QC))[i],
-                              internal_standards_rt[j, ],
-                              internal_standards_mz[j, ]
-                            )
-                            rt <- eic[, 1L]
-                            int <- eic[, 2L]
-                            int[which(is.na(int))] <- 0
-                            # if intensity length is under 7, lower filter length
-                            # to odd number <= intensity length
-                            if (length(int) < 7) {
-                                if (length(int) %% 2 == 0) {
-                                    fl <- length(int) - 1
-                                } else {
-                                    fl <- length(int)
-                                }
-                            } else {
-                                fl <- 7
-                            }
-                            smoothed <- sgolayfilt(int, p = 3, n = fl)
-                            if (smoothing == TRUE) {
-                                int <- smoothed
-                                int[int < 0] <- 0
-                            }
-                            border <-
-                                find_peak_points(rt, smoothed, dbData_std$tr[j],
-                                    .check = FALSE
-                                )
-                            """
+                            
                             res <- smoothingSG(
                               dbData_std$tr[j],
                               unique(dataOrigin(spectra_QC))[i],
@@ -712,43 +552,7 @@ tardisPeaks <-
                         y_list <- list()
                         for (i in 1:length(sample_names)) {
                             sample_name <- unlist(sample_names[i])
-                            # filtered_spectra <- filterSingle(
-                            #     spectra_QC,
-                            #     unique(dataOrigin(spectra_QC))[i],
-                            #     rtRanges[j, ],
-                            #     mzRanges[j, ]
-                            # )
-                            # eic <- extract_eic(filtered_spectra)
-                            """
-                            eic <- filterSingle_extractEIC(
-                              spectra_QC,
-                              unique(dataOrigin(spectra_QC))[i],
-                              rtRanges[j, ],
-                              mzRanges[j, ]
-                            )
-                            rt <- eic[, 1L]
-                            int <- eic[, 2L]
-                            int[which(is.na(int))] <- 0
-                            # if intensity length is under 7, lower filter length
-                            # to odd number <= intensity length
-                            if (length(int) < 7) {
-                                if (length(int) %% 2 == 0) {
-                                    fl <- length(int) - 1
-                                } else {
-                                    fl <- length(int)
-                                }
-                            } else {
-                                fl <- 7
-                            }
-                            smoothed <- sgolayfilt(int, p = 3, n = fl)
-                            if (smoothing == TRUE) {
-                                int <- smoothed
-                                int[int < 0] <- 0
-                            }
-                            border <- find_peak_points(rt, smoothed, dbData$tr[j],
-                                .check = FALSE
-                            )
-                            """
+                            
                             res <- smoothingSG(
                               dbData$tr[j],
                               unique(dataOrigin(spectra_QC))[i],
@@ -768,44 +572,7 @@ tardisPeaks <-
                             int_list <- c(int_list, list(int))
                             x_list <- c(x_list, list(x))
                             y_list <- c(y_list, list(y))
-                            """
-                            if (length(unique(y)) > 1) {
-                                auc <- trapz(x, y)
-                                pop <- length(x)
-                                qscore <- qscoreCalculator(x, y)
-                                compound_info <- dbData[j, ]
-                                results_QCs_batch <- rbind(
-                                    results_QCs_batch,
-                                    data.frame(
-                                        Component = compound_info$ID,
-                                        Sample = sample_name,
-                                        AUC = auc,
-                                        MaxInt = int[border[3L]],
-                                        SNR = qscore[1],
-                                        peak_cor = qscore[2],
-                                        foundRT = rt[border[3L]],
-                                        pop = pop,
-                                        compound_info
-                                    )
-                                )
-                            } else {
-                                compound_info <- dbData[j, ]
-                                results_QCs_batch <- rbind(
-                                    results_QCs_batch,
-                                    data.frame(
-                                        Component = compound_info$ID,
-                                        Sample = sample_name,
-                                        AUC = NA,
-                                        MaxInt = NA,
-                                        SNR = NA,
-                                        peak_cor = NA,
-                                        foundRT = NA,
-                                        pop = NA,
-                                        compound_info
-                                    )
-                                )
-                            }
-                            """
+                            
                             results_QCs_batch <- checkValidPeak(x, y, rt, int, border, sample_name, dbData[j, ], results_QCs_batch)
                         }
                         if (plots_QC == TRUE) {
@@ -860,44 +627,7 @@ tardisPeaks <-
                     y_list <- list()
                     for (i in 1:length(sample_names)) {
                         sample_name <- unlist(sample_names[i])
-                        # spectra_filtered <- filterSingle(
-                        #     spectra,
-                        #     unique(dataOrigin(spectra))[i],
-                        #     rtRanges[j, ],
-                        #     mzRanges[j, ]
-                        # )
-                        # eic <- extract_eic(spectra_filtered)
-                        """
-                        eic <- filterSingle_extractEIC(
-                          spectra,
-                          unique(dataOrigin(spectra))[i],
-                          rtRanges[j, ],
-                          mzRanges[j, ]
-                        )
-                        eic <- eic[which(duplicated(eic[, 1]) == FALSE), ] # why is this here?
-                        rt <- eic[, 1L]
-                        int <- eic[, 2L]
-                        int[which(is.na(int))] <- 0
-                        # if intensity length is under 7, lower filter length
-                        # to odd number <= intensity length
-                        if (length(int) < 7) {
-                            if (length(int) %% 2 == 0) {
-                                fl <- length(int) - 1
-                            } else {
-                                fl <- length(int)
-                            }
-                        } else {
-                            fl <- 7
-                        }
-                        smoothed <- sgolayfilt(int, p = 3, n = fl)
-                        if (smoothing == TRUE) {
-                            int <- smoothed
-                            int[int < 0] <- 0
-                        }
-                        border <- find_peak_points(rt, smoothed, dbData$tr[j],
-                            .check = FALSE
-                        )
-                        """
+                        
                         res <- smoothingSG(
                           dbData$tr[j],
                           unique(dataOrigin(spectra))[i],
@@ -917,45 +647,7 @@ tardisPeaks <-
                         int_list <- c(int_list, list(int))
                         x_list <- c(x_list, list(x))
                         y_list <- c(y_list, list(y))
-                        """
-                        # Check if there are at least two unique values for the component
-                        if (length(unique(y)) > 1) {
-                            auc <- trapz(x, y)
-                            pop <- length(x)
-                            qscore <- qscoreCalculator(x, y)
-                            compound_info <- dbData[j, ]
-                            results_samples <- rbind(
-                                results_samples,
-                                data.frame(
-                                    Component = compound_info$ID,
-                                    Sample = sample_name,
-                                    AUC = auc,
-                                    MaxInt = int[border[3L]],
-                                    SNR = qscore[1],
-                                    peak_cor = qscore[2],
-                                    foundRT = rt[border[3L]],
-                                    pop = pop,
-                                    compound_info
-                                )
-                            )
-                        } else {
-                            compound_info <- dbData[j, ]
-                            results_samples <- rbind(
-                                results_samples,
-                                data.frame(
-                                    Component = compound_info$ID,
-                                    Sample = sample_name,
-                                    AUC = NA,
-                                    MaxInt = NA,
-                                    SNR = NA,
-                                    peak_cor = NA,
-                                    foundRT = NA,
-                                    pop = NA,
-                                    compound_info
-                                )
-                            )
-                        }
-                        """
+
                         results_samples <- checkValidPeak(x, y, rt, int, border, sample_name, dbData[j, ], results_samples)
                     }
                     if (plots_samples == TRUE) {

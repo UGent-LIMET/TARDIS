@@ -108,6 +108,57 @@ smoothingSG <- function(tr,
   return(list(rt, int, border))
 }
 
+# a function to check if a peak is valid
+checkValidPeak <- function(x, y, rt, int, border, sample_name, compound_info, results) {
+  # idx <- border[1L]:border[2L]
+  # x <- rt[idx]
+  # y <- int[idx]
+  # rt_list <- c(rt_list, list(rt))
+  # int_list <- c(int_list, list(int))
+  # x_list <- c(x_list, list(x))
+  # y_list <- c(y_list, list(y))
+  
+  if (length(unique(y)) > 1) {
+    auc <- trapz(x, y)
+    pop <- length(x)
+    qscore <- qscoreCalculator(x, y)
+    #compound_info <- dbData[j, ]
+    results <- rbind(
+      results,
+      data.frame(
+        Component = compound_info$ID,
+        Sample = sample_name,
+        AUC = auc,
+        MaxInt = int[border[3L]],
+        SNR = qscore[1],
+        peak_cor = qscore[2],
+        foundRT = rt[border[3L]],
+        pop = pop,
+        compound_info
+      )
+    )
+  } else {
+    #compound_info <- dbData[j, ]
+    
+    results <- rbind(
+      results,
+      data.frame(
+        Component = compound_info$ID,
+        Sample = sample_name,
+        AUC = NA,
+        MaxInt = NA,
+        SNR = NA,
+        peak_cor = NA,
+        foundRT = NA,
+        pop = NA,
+        compound_info
+      )
+    )
+  }
+  return(results)
+}
+
+
 ## jo: wouldn't it be better to call the function on a data object instead
 ## of a file path? The (advanced) user could eventually do some more quality
 ## checks on the data before?
@@ -408,6 +459,7 @@ tardisPeaks <-
                     int_list <- c(int_list, list(int))
                     x_list <- c(x_list, list(x))
                     y_list <- c(y_list, list(y))
+                    """
                     ## Check if there are at least two unique values for the component
                     if (length(unique(y)) > 1) {
                         auc <- trapz(x, y)
@@ -446,6 +498,8 @@ tardisPeaks <-
                             )
                         )
                     }
+                    """
+                    results_screening <- checkValidPeak(x, y, rt, int, border, sample_name, dbData[j, ], results_screening)
                 }
                 # Create and save the plot for the current component
                 batchnr <- 1
@@ -714,6 +768,7 @@ tardisPeaks <-
                             int_list <- c(int_list, list(int))
                             x_list <- c(x_list, list(x))
                             y_list <- c(y_list, list(y))
+                            """
                             if (length(unique(y)) > 1) {
                                 auc <- trapz(x, y)
                                 pop <- length(x)
@@ -750,6 +805,8 @@ tardisPeaks <-
                                     )
                                 )
                             }
+                            """
+                            results_QCs_batch <- checkValidPeak(x, y, rt, int, border, sample_name, dbData[j, ], results_QCs_batch)
                         }
                         if (plots_QC == TRUE) {
                             plotQCs(
@@ -860,6 +917,7 @@ tardisPeaks <-
                         int_list <- c(int_list, list(int))
                         x_list <- c(x_list, list(x))
                         y_list <- c(y_list, list(y))
+                        """
                         # Check if there are at least two unique values for the component
                         if (length(unique(y)) > 1) {
                             auc <- trapz(x, y)
@@ -897,6 +955,8 @@ tardisPeaks <-
                                 )
                             )
                         }
+                        """
+                        results_samples <- checkValidPeak(x, y, rt, int, border, sample_name, dbData[j, ], results_samples)
                     }
                     if (plots_samples == TRUE) {
                         plotSamples(

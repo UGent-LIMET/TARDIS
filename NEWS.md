@@ -6,6 +6,9 @@
 ## Change2
 - Made the most basic smoothingSG function in peaks_with_tardis.R, with no changes to algorithm, only replacing repetitive smoothing code
 
+## Change3
+- Made the most basic checkValidPeak function in peaks_with_tardis.R, with no changes to algorithm, only replacing repetitive smoothing code
+
 # TARDIS 1.0
 
 ## Changes in 1.1.0

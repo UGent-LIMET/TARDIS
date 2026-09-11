@@ -1,3 +1,9 @@
+# Stepwise code changes and validation (from v1.1.0)
+
+## Change1
+- Added filterSingle_extractEIC function in extractPeak.R and changed relevant parts in peaks_with_tardis.R to use this new function
+
+
 # TARDIS 1.0
 
 ## Changes in 1.1.0

@@ -72,6 +72,42 @@
 #' @export
 #'
 
+smoothingSG <- function(tr,
+                        all_files_i,
+                        spectra_QC,
+                        rt_input,
+                        mz_input,
+                        smoothing) {
+  
+  eic <- filterSingle_extractEIC(spectra_QC, all_files_i, rt_input, mz_input)
+  
+  rt  <- eic[, 1L]
+  int <- eic[, 2L]
+  
+  int[which(is.na(int))] <- 0
+  
+  if (length(int) < 7) {
+    if (length(int) %% 2 == 0) {
+      fl <- length(int) - 1
+    } else {
+      fl <- length(int)
+    }
+  } else {
+    fl <- 7
+  }
+  smoothed <- sgolayfilt(int, p = 3, n = fl)
+  if (smoothing == TRUE) {
+    int <- smoothed
+    int[int < 0] <- 0
+  }
+  # Border detection
+  border <-
+    find_peak_points(rt, smoothed, tr,
+                     .check = FALSE
+    )  
+  return(list(rt, int, border))
+}
+
 ## jo: wouldn't it be better to call the function on a data object instead
 ## of a file path? The (advanced) user could eventually do some more quality
 ## checks on the data before?
@@ -234,6 +270,7 @@ tardisPeaks <-
                         #     internal_standards_mz[j, ]
                         # )
                         # eic <- extract_eic(filtered_spectra)
+                        """
                         eic <- filterSingle_extractEIC(
                           spectra_QC,
                           unique(dataOrigin(spectra_QC))[i],
@@ -268,6 +305,18 @@ tardisPeaks <-
                             find_peak_points(rt, smoothed, dbData_std$tr[j],
                                 .check = FALSE
                             )
+                        """
+                        res <- smoothingSG(
+                          dbData_std$tr[j],
+                          unique(dataOrigin(spectra_QC))[i],
+                          spectra_QC,
+                          internal_standards_rt[j, ],
+                          internal_standards_mz[j, ],
+                          smoothing
+                        )
+                        rt <- res$rt
+                        int <- res$int
+                        border <- res$border
 
                         # Save found RT for internal standard target
                         int_std_foundrt <-
@@ -311,6 +360,7 @@ tardisPeaks <-
                     #     mzRanges[j, ]
                     # )
                     # eic <- extract_eic(filtered_spectra)
+                    """
                     eic <- filterSingle_extractEIC(
                           spectra_QC,
                           unique(dataOrigin(spectra_QC))[i],
@@ -338,6 +388,19 @@ tardisPeaks <-
                     }
                     border <-
                         find_peak_points(rt, smoothed, dbData$tr[j], .check = FALSE)
+                    """
+                    res <- smoothingSG(
+                      dbData$tr[j],
+                      unique(dataOrigin(spectra_QC))[i],
+                      spectra_QC,
+                      rtRanges[j, ],
+                      mzRanges[j, ],
+                      smoothing
+                    )
+                    rt <- res$rt
+                    int <- res$int
+                    border <- res$border
+                    
                     idx <- border[1L]:border[2L]
                     x <- rt[idx]
                     y <- int[idx]
@@ -513,6 +576,7 @@ tardisPeaks <-
                             #     internal_standards_mz[j, ]
                             # )
                             # eic <- extract_eic(spectra_filtered)
+                            """
                             eic <- filterSingle_extractEIC(
                               spectra_QC,
                               unique(dataOrigin(spectra_QC))[i],
@@ -542,6 +606,19 @@ tardisPeaks <-
                                 find_peak_points(rt, smoothed, dbData_std$tr[j],
                                     .check = FALSE
                                 )
+                            """
+                            res <- smoothingSG(
+                              dbData_std$tr[j],
+                              unique(dataOrigin(spectra_QC))[i],
+                              spectra_QC,
+                              internal_standards_rt[j, ],
+                              internal_standards_mz[j, ],
+                              smoothing
+                            )
+                            rt <- res$rt
+                            int <- res$int
+                            border <- res$border
+                            
                             int_std_foundrt <-
                                 cbind(int_std_foundrt, rt[border[3L]])
                         }
@@ -588,6 +665,7 @@ tardisPeaks <-
                             #     mzRanges[j, ]
                             # )
                             # eic <- extract_eic(filtered_spectra)
+                            """
                             eic <- filterSingle_extractEIC(
                               spectra_QC,
                               unique(dataOrigin(spectra_QC))[i],
@@ -616,6 +694,19 @@ tardisPeaks <-
                             border <- find_peak_points(rt, smoothed, dbData$tr[j],
                                 .check = FALSE
                             )
+                            """
+                            res <- smoothingSG(
+                              dbData$tr[j],
+                              unique(dataOrigin(spectra_QC))[i],
+                              spectra_QC,
+                              rtRanges[j, ],
+                              mzRanges[j, ],
+                              smoothing
+                            )
+                            rt <- res$rt
+                            int <- res$int
+                            border <- res$border
+                            
                             idx <- border[1L]:border[2L]
                             x <- rt[idx]
                             y <- int[idx]
@@ -719,6 +810,7 @@ tardisPeaks <-
                         #     mzRanges[j, ]
                         # )
                         # eic <- extract_eic(spectra_filtered)
+                        """
                         eic <- filterSingle_extractEIC(
                           spectra,
                           unique(dataOrigin(spectra))[i],
@@ -748,6 +840,19 @@ tardisPeaks <-
                         border <- find_peak_points(rt, smoothed, dbData$tr[j],
                             .check = FALSE
                         )
+                        """
+                        res <- smoothingSG(
+                          dbData$tr[j],
+                          unique(dataOrigin(spectra))[i],
+                          spectra,
+                          rtRanges[j, ],
+                          mzRanges[j, ],
+                          smoothing
+                        )
+                        rt <- res$rt
+                        int <- res$int
+                        border <- res$border
+                        
                         idx <- border[1L]:border[2L]
                         x <- rt[idx]
                         y <- int[idx]

@@ -227,13 +227,19 @@ tardisPeaks <-
                     y_list <- list()
                     for (i in 1:length(sample_names)) {
                         sample_name <- unlist(sample_names[i])
-                        filtered_spectra <- TARDIS:::filterSingle(
-                            spectra_QC,
-                            unique(dataOrigin(spectra_QC))[i],
-                            internal_standards_rt[j, ],
-                            internal_standards_mz[j, ]
+                        # filtered_spectra <- TARDIS:::filterSingle(
+                        #     spectra_QC,
+                        #     unique(dataOrigin(spectra_QC))[i],
+                        #     internal_standards_rt[j, ],
+                        #     internal_standards_mz[j, ]
+                        # )
+                        # eic <- extract_eic(filtered_spectra)
+                        eic <- filterSingle_extractEIC(
+                          spectra_QC,
+                          unique(dataOrigin(spectra_QC))[i],
+                          internal_standards_rt[j, ],
+                          internal_standards_mz[j, ]
                         )
-                        eic <- extract_eic(filtered_spectra)
                         rt <- eic[, 1L]
                         int <- eic[, 2L]
                         # NA intensities are set to zero --> should change this so only NA's
@@ -298,13 +304,19 @@ tardisPeaks <-
                 y_list <- list()
                 for (i in 1:length(sample_names)) {
                     sample_name <- unlist(sample_names[i])
-                    filtered_spectra <- filterSingle(
-                        spectra_QC,
-                        unique(dataOrigin(spectra_QC))[i],
-                        rtRanges[j, ],
-                        mzRanges[j, ]
-                    )
-                    eic <- extract_eic(filtered_spectra)
+                    # filtered_spectra <- filterSingle(
+                    #     spectra_QC,
+                    #     unique(dataOrigin(spectra_QC))[i],
+                    #     rtRanges[j, ],
+                    #     mzRanges[j, ]
+                    # )
+                    # eic <- extract_eic(filtered_spectra)
+                    eic <- filterSingle_extractEIC(
+                          spectra_QC,
+                          unique(dataOrigin(spectra_QC))[i],
+                          rtRanges[j, ],
+                          mzRanges[j, ]
+                      )
                     rt <- eic[, 1L]
                     int <- eic[, 2L]
                     int[which(is.na(int))] <- 0
@@ -494,13 +506,19 @@ tardisPeaks <-
                         y_list <- list()
                         for (i in 1:length(sample_names)) {
                             sample_name <- unlist(sample_names[i])
-                            spectra_filtered <- filterSingle(
-                                spectra_QC,
-                                unique(dataOrigin(spectra_QC))[i],
-                                internal_standards_rt[j, ],
-                                internal_standards_mz[j, ]
+                            # spectra_filtered <- filterSingle(
+                            #     spectra_QC,
+                            #     unique(dataOrigin(spectra_QC))[i],
+                            #     internal_standards_rt[j, ],
+                            #     internal_standards_mz[j, ]
+                            # )
+                            # eic <- extract_eic(spectra_filtered)
+                            eic <- filterSingle_extractEIC(
+                              spectra_QC,
+                              unique(dataOrigin(spectra_QC))[i],
+                              internal_standards_rt[j, ],
+                              internal_standards_mz[j, ]
                             )
-                            eic <- extract_eic(spectra_filtered)
                             rt <- eic[, 1L]
                             int <- eic[, 2L]
                             int[which(is.na(int))] <- 0
@@ -563,13 +581,19 @@ tardisPeaks <-
                         y_list <- list()
                         for (i in 1:length(sample_names)) {
                             sample_name <- unlist(sample_names[i])
-                            filtered_spectra <- filterSingle(
-                                spectra_QC,
-                                unique(dataOrigin(spectra_QC))[i],
-                                rtRanges[j, ],
-                                mzRanges[j, ]
+                            # filtered_spectra <- filterSingle(
+                            #     spectra_QC,
+                            #     unique(dataOrigin(spectra_QC))[i],
+                            #     rtRanges[j, ],
+                            #     mzRanges[j, ]
+                            # )
+                            # eic <- extract_eic(filtered_spectra)
+                            eic <- filterSingle_extractEIC(
+                              spectra_QC,
+                              unique(dataOrigin(spectra_QC))[i],
+                              rtRanges[j, ],
+                              mzRanges[j, ]
                             )
-                            eic <- extract_eic(filtered_spectra)
                             rt <- eic[, 1L]
                             int <- eic[, 2L]
                             int[which(is.na(int))] <- 0
@@ -688,13 +712,19 @@ tardisPeaks <-
                     y_list <- list()
                     for (i in 1:length(sample_names)) {
                         sample_name <- unlist(sample_names[i])
-                        spectra_filtered <- filterSingle(
-                            spectra,
-                            unique(dataOrigin(spectra))[i],
-                            rtRanges[j, ],
-                            mzRanges[j, ]
+                        # spectra_filtered <- filterSingle(
+                        #     spectra,
+                        #     unique(dataOrigin(spectra))[i],
+                        #     rtRanges[j, ],
+                        #     mzRanges[j, ]
+                        # )
+                        # eic <- extract_eic(spectra_filtered)
+                        eic <- filterSingle_extractEIC(
+                          spectra,
+                          unique(dataOrigin(spectra))[i],
+                          rtRanges[j, ],
+                          mzRanges[j, ]
                         )
-                        eic <- extract_eic(spectra_filtered)
                         eic <- eic[which(duplicated(eic[, 1]) == FALSE), ] # why is this here?
                         rt <- eic[, 1L]
                         int <- eic[, 2L]

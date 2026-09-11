@@ -48,3 +48,30 @@ extract_eic <- function(spectra) {
     colnames(eic) <- c("rt", "int")
     eic
 }
+
+# vectorize the loop to make it faster
+filterSingle_extractEIC <- function(spectra, dataOrigin, rt_range, mz_range) {
+  spectra_filtered <- spectra |>
+    filterDataOrigin(dataOrigin) |>
+    filterRt(rt_range) |>
+    filterMzRange(mz_range)
+  
+  ints <- intensity(spectra_filtered)
+  rts  <- rtime(spectra_filtered)
+  
+  # if there is NA, impute via Linear Interpolation
+  if (anyNA(ints)) {
+    ints <- imputeLinInterpol(ints)
+  }
+  # if there is NA, impute via Linear Interpolation
+  if (anyNA(rts)) {
+    rts <- imputeLinInterpol(rts)
+  }
+  
+  out <- cbind(
+    rt  = rts,
+    # na.rm = TRUE ignores NA (treats it as 0)
+    int = vapply(ints, function(x) if (length(x)) sum(x, na.rm = TRUE) else NA_real_, numeric(1))
+  )
+  out
+}

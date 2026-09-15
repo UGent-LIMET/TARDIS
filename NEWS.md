@@ -25,6 +25,13 @@
 	- Changed max_int_filter null value handling, to fix error "Error in if: missing value where TRUE/FALSE needed"
 	- edited metrics tables generation code (to preserve clean layout for the output csv tables)
 
+## Change7
+- Memory optimization
+	- filter spectra before pblapply loops
+	- delete unnecessary memory
+	- allocate fixed sizes to objects when initializing
+
+
 # TARDIS 1.0
 
 ## Changes in 1.1.0

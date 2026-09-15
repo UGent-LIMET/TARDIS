@@ -38,8 +38,10 @@
 #' @param smoothing `logical(1)` Smooth the peaks with [sgolayfilt()]
 #' @param max_int_filter `numeric(1)` Disregard peaks with a max. int. lower
 #'     than this value
+#' @param num_cores `numeric(1)` Number of cores to use for parallelization
 #'
 #' @import MsExperiment
+#' @import xcms
 #' @importFrom Spectra MsBackendMzR
 #' @importFrom Spectra MsBackendSql
 #' @importFrom Spectra filterMzRange
@@ -65,7 +67,12 @@
 #' @importFrom dplyr group_by
 #' @importFrom dplyr select
 #' @importFrom dplyr first
+#' @importFrom dplyr mutate
 #' @importFrom S4Vectors DataFrame
+#' @importFrom pbapply pboptions
+#' @importFrom pbapply pblapply
+#' @importFrom stats loess
+#' @import parallel
 #'
 #' @return returns `list` with auc table and feature table with summarized
 #'     stats per compound. Outputs plots and other tables to output folder.
@@ -342,7 +349,14 @@ tardisPeaks <-
     int_std_id,
     screening_mode = FALSE,
     smoothing = TRUE,
-    max_int_filter = NULL) {
+    max_int_filter = NULL,
+    num_cores = 1) {
+        # Setup the cluster (num_cores parameter)
+        num_cores <- num_cores
+        cl <- makeCluster(num_cores)
+        # cluster is stopped if there is an error
+        on.exit(stopCluster(cl), add = TRUE)
+      
         results_samples <-
             data.frame(
                 Component = character(0),
@@ -432,6 +446,46 @@ tardisPeaks <-
                 ## Initiate empty vectors
                 int_std_foundrt <- c()
                 int_std <- c()
+                
+                # parallel
+                clusterEvalQ(cl, {
+                  library(MsExperiment) #
+                  library(Spectra)
+                  library(signal) # sgolayfilt
+                  library(xcms) #  # rt alignment - not inside pblapply & imputing missing values (in filter-extract)
+                  library(pracma)   # Required for: trapz() (AUC calculation)
+                  library(BiocParallel) #
+                  #library(tidyr)
+                  #library(writexl)
+                  #library(dplyr)   # Required for: group_by, summarise, etc.
+                  #library(S4Vectors)
+                  library(pbapply)
+                  library(parallel)
+                  library(MsBackendSql)      # <-- ADD (provides MsBackendOfflineSql)
+                  library(DBI)               # <-- ADD (SQLite connection dep)
+                  library(RSQLite)           # <-- ADD
+                  #library(diptest)
+                })
+                
+                # Export everything the workers need to know
+                # This includes variables AND the function smoothingSG
+                # include ls("package:TARDIS"): to update worker processes
+                clusterExport(cl, varlist = c("smoothingSG", "filterSingle_extractEIC"), envir = environment())  # find variables/functions anywhere in the code
+                clusterExport(cl, varlist = c("sample_names", "dbData_std", "all_files",
+                                              "spectra_QC",
+                                              "internal_standards_rt",
+                                              "internal_standards_mz", "smoothing"
+                                              #"pval_cutoff", "smoothing_order"
+                                              ), envir = environment())  # find variables/functions anywhere in the code
+                
+                # disable progress bar - defaults to parLapply!
+                pboptions(type = "none")
+                # load balancing
+                pboptions(use_lb = FALSE)
+
+                
+                
+                
                 ## Retrieve foundRT of internal standards in QC's,
                 ## loop over all samples and all internal standards
                 # for (j in 1:dim(internal_standards_rt)[1]) {
@@ -467,7 +521,7 @@ tardisPeaks <-
                 # }
                 
                 # lapply code block
-                results_list1 <- lapply(1:nrow(internal_standards_rt), function(j) {
+                results_list1 <- pblapply(1:nrow(internal_standards_rt), function(j) {
                   local_found_rt <- numeric(length(sample_names))
                   for (i in 1:length(sample_names)) {
                     res <- smoothingSG(
@@ -502,6 +556,21 @@ tardisPeaks <-
             sample_names <-
                 lapply(data_QC@sampleData$spectraOrigin, basename)
 
+            # parallel
+            clusterExport(cl, varlist = c("smoothingSG",
+                                          "filterSingle_extractEIC",
+                                          "checkValidPeak",
+                                          "plotDiagnostic",
+                                          "safe_bind"), envir = environment()) # find the variables in this function, not the global environment!
+            clusterExport(cl, varlist = c("sample_names", "dbData", "all_files",
+                                          "spectra_QC",
+                                          "smoothing",
+                                          "rtRanges", "mzRanges", "diagnostic_plots",
+                                          "output_directory", "pval_cutoff", "QC_pattern", "smoothing_order"), envir = environment()) # find the variables in this function, not the global environment!
+            # load balancing
+            pboptions(use_lb = FALSE)
+
+            
             # for (j in 1:dim(rtRanges)[1]) {
             #     rt_list <- list()
             #     int_list <- list()
@@ -549,7 +618,7 @@ tardisPeaks <-
             # }
             
             # lapply code block (j = internal standards)
-            results_list2 <- lapply(1:dim(rtRanges)[1], function(j) {  # for all target compounds
+            results_list2 <- pblapply(1:dim(rtRanges)[1], function(j) {  # for all target compounds
               compound_info <- dbData[j, ]  # id, name, mz, rt
               rt_list <- vector("list", length(sample_names))
               int_list <- vector("list", length(sample_names))
@@ -677,6 +746,43 @@ tardisPeaks <-
                         lapply(data_QC@sampleData$spectraOrigin, basename)
                     int_std_foundrt <- c()
                     int_std <- c()
+                    
+                    
+                    # parallel
+                    clusterEvalQ(cl, {
+                      library(MsExperiment) #
+                      library(Spectra)
+                      library(signal) # sgolayfilt
+                      library(xcms) #  # rt alignment - not inside pblapply
+                      library(pracma)   # Required for: trapz() (AUC calculation)
+                      library(BiocParallel) #
+                      #library(tidyr)
+                      #library(writexl)
+                      #library(dplyr)   # Required for: group_by, summarise, etc.
+                      #library(S4Vectors)
+                      library(pbapply)
+                      library(parallel)
+                      library(MsBackendSql)      # <-- ADD (provides MsBackendOfflineSql)
+                      library(DBI)               # <-- ADD (SQLite connection dep)
+                      library(RSQLite)           # <-- ADD
+                      #library(diptest)
+                    })
+                    
+                    clusterExport(cl, varlist = c("smoothingSG",
+                                                  "filterSingle_extractEIC"), envir = environment()) # find the variables in this function & the global environment!
+                    
+                    clusterExport(cl, varlist = c("dbData_std", "all_files",
+                                                  "spectra_QC", "smoothing",
+                                                  "internal_standards_rt",
+                                                  "internal_standards_mz", "sample_names"
+                                                  #"pval_cutoff", "smoothing_order"
+                                                  ), envir = environment()) # find the variables in this function & the global environment!
+                    # disable progress bar - defaults to parLapply!
+                    pboptions(type = "none")
+                    # load balancing x
+                    pboptions(use_lb = FALSE)
+
+                    
                     # for (j in 1:dim(internal_standards_rt)[1]) {
                     #     rt_list <- list()
                     #     int_list <- list()
@@ -705,7 +811,7 @@ tardisPeaks <-
                     #     int_std_foundrt <- c()
                     # }
                     # lapply code block
-                    results_list3 <- lapply(1:dim(internal_standards_rt)[1], function(j) {
+                    results_list3 <- pblapply(1:dim(internal_standards_rt)[1], function(j) {
                       local_found_rt <- numeric(length(sample_names))
                       
                       for (i in 1:length(sample_names)) {
@@ -749,6 +855,22 @@ tardisPeaks <-
                     } else {
                         spectra_QC <- data_QC@spectra
                     }
+                    
+                    # parallel
+                    clusterExport(cl, varlist = c("smoothingSG",
+                                                  "filterSingle_extractEIC",
+                                                  "checkValidPeak",
+                                                  "plots_QC",
+                                                  "safe_bind"), envir = environment()) # find the variables in this function, not the global environment!
+                    
+                    clusterExport(cl, varlist = c("sample_names", "dbData", "all_files",
+                                                  "spectra_QC", "smoothing",
+                                                  "rtRanges", "mzRanges", "plots_QC",
+                                                  "output_directory", "batchnr"
+                                                  #"pval_cutoff", "smoothing_order"
+                                                  ), envir = environment()) # find the variables in this function, not the global environment!
+                    
+                    
                     # for (j in 1:dim(rtRanges)[1]) {
                     #     rt_list <- list()
                     #     int_list <- list()
@@ -793,7 +915,7 @@ tardisPeaks <-
                     #     }
                     # }
                     # lapply code block
-                    results_list4 <- lapply(1:dim(rtRanges)[1], function(j) {
+                    results_list4 <- pblapply(1:dim(rtRanges)[1], function(j) {
                       compound_info <- dbData[j, ]
                       rt_list <- vector("list", length(sample_names))
                       int_list <- vector("list", length(sample_names))
@@ -883,6 +1005,24 @@ tardisPeaks <-
                     spectra <- data_batch@spectra
                 }
 
+                # parallel
+                clusterExport(cl, varlist = c("smoothingSG",
+                                              "filterSingle_extractEIC",
+                                              "checkValidPeak",
+                                              "plots_samples",
+                                              "diagnostic_plots",
+                                              "safe_bind"), envir = environment()) # find the variables in this function, not the global environment!
+                
+                
+                clusterExport(cl, varlist = c("sample_names", "dbData", "all_files",
+                                              "spectra", "smoothing",
+                                              "rtRanges", "mzRanges",
+                                              "plots_samples", "diagnostic_plots",
+                                              "output_directory", "batchnr"
+                                              #"pval_cutoff", "QC_pattern", "smoothing_order"
+                                              ), envir = environment()) # find the variables in this function, not the global environment!
+                
+                
                 # for (j in 1:dim(rtRanges)[1]) {
                 #     rt_list <- list()
                 #     int_list <- list()
@@ -939,7 +1079,7 @@ tardisPeaks <-
                 #     }
                 # }
                 # lapply code block
-                results_list5 <- lapply(1:dim(rtRanges)[1], function(j){
+                results_list5 <- pblapply(1:dim(rtRanges)[1], function(j){
                   compound_info <- dbData[j, ]
                   rt_list <- vector("list", length(sample_names))
                   int_list <- vector("list", length(sample_names))
@@ -1015,82 +1155,122 @@ tardisPeaks <-
             # }
             # results <- results_samples
 
-            if (is.null(max_int_filter) == FALSE && max_int_filter != 0) {
-                results <- results[which(results$MaxInt >= max_int_filter), ]
+            # edited from here!
+            # Use is.numeric and !is.na to ensure the value is actually a number
+            if (is.numeric(max_int_filter) && !is.na(max_int_filter) && max_int_filter > 0) {
+              results <- results[which(results$MaxInt >= max_int_filter), ]
             }
-
-            # AUC, int, SNR & peakcor tables for each component peak in every sample
+            # This prevents: duplicated (Component, Sample) pairs,
+            # pivot chaos, column explosions
+            results <- results %>%
+              group_by(Component, Sample) %>%
+              summarise(
+                AUC = mean(AUC, na.rm = TRUE),
+                MaxInt = mean(MaxInt, na.rm = TRUE),
+                SNR = mean(SNR, na.rm = TRUE),
+                peak_cor = mean(peak_cor, na.rm = TRUE),
+                foundRT = mean(foundRT, na.rm = TRUE),
+                pop = mean(pop, na.rm = TRUE),
+                ID = first(ID),
+                NAME = first(NAME),
+                mz = first(mz),
+                tr = first(tr),
+                .groups = "drop"
+              )
+            
             auc_table <- results %>%
-                select(Component, Sample, AUC) %>%
-                spread(Sample, AUC, fill = NA, drop = FALSE)
-
+              dplyr::select(Component, Sample, AUC) %>%
+              tidyr::pivot_wider(
+                names_from = Sample,
+                values_from = AUC,
+                values_fill = NA   # prevents missing structure issues
+              )
             write.csv(auc_table, file = paste0(output_directory, "auc_table.csv"))
+            
             pop_table <- results %>%
-                select(Component, Sample, pop) %>%
-                spread(Sample, pop, fill = NA, drop = FALSE)
-
+              dplyr::select(Component, Sample, pop) %>%
+              tidyr::pivot_wider(
+                names_from = Sample,
+                values_from = pop,
+                values_fill = NA
+              )
             write.csv(pop_table, file = paste0(output_directory, "pop_table.csv"))
+            
             SNR_table <- results %>%
-                select(Component, Sample, SNR) %>%
-                spread(Sample, SNR, fill = NA, drop = FALSE)
-
+              dplyr::select(Component, Sample, SNR) %>%
+              tidyr::pivot_wider(
+                names_from = Sample,
+                values_from = SNR,
+                values_fill = NA
+              )
             write.csv(SNR_table, file = paste0(output_directory, "snr_table.csv"))
+            
             int_table <- results %>%
-                select(Component, Sample, MaxInt) %>%
-                spread(Sample, MaxInt, fill = NA, drop = FALSE)
-
+              dplyr::select(Component, Sample, MaxInt) %>%
+              tidyr::pivot_wider(
+                names_from = Sample,
+                values_from = MaxInt,
+                values_fill = NA
+              )
             write.csv(int_table, file = paste0(output_directory, "int_table.csv"))
+            
             peakcor_table <- results %>%
-                select(Component, Sample, peak_cor) %>%
-                spread(Sample, peak_cor, fill = NA, drop = FALSE)
-
-            write.csv(peakcor_table, file = paste0(output_directory, "peakcor_table.csv"))
-
-
+              dplyr::select(Component, Sample, peak_cor) %>%
+              tidyr::pivot_wider(
+                names_from = Sample,
+                values_from = peak_cor,
+                values_fill = NA
+              )
+            write.csv(peakcor_table,
+                      file = paste0(output_directory, "peakcor_table.csv"))
+            
+            
             # summarize feature table based on QC's
             avg_metrics_table <- NULL
             if (length(data_QC) != 0) {
-                QC_results <- results[grep("QC", results$Sample), ]
-                avg_metrics_table <- QC_results %>%
-                    group_by(Component) %>%
-                    summarise_at(vars(-Sample), list(~ if (is.numeric(.)) {
-                        mean(., na.rm = TRUE)
-                    } else {
-                        first(.)
-                    }))
-                write_xlsx(avg_metrics_table, paste0(
-                    output_directory,
-                    "feat_table.xlsx"
-                ))
+              QC_results <- results[grep(QC_pattern, results$Sample), ]
+              avg_metrics_table <- QC_results %>%
+                group_by(Component) %>%
+                summarise_at(vars(-Sample), list(~ if (is.numeric(.)) {
+                  mean(., na.rm = TRUE)
+                } else {
+                  first(.)
+                }))
+              avg_metrics_table[] <- lapply(avg_metrics_table, function(x) {
+                if (is.list(x)) unlist(x) else x
+              })
+              write_xlsx(avg_metrics_table,
+                         paste0(output_directory, "feat_table.xlsx"))
             }
-
+            
             # save input parameters to .csv
-
+            
             input_params <- data.frame(
-                "ppm" = .collapse_safe(ppm),
-                "rtdev" = .collapse_safe(rtdev),
-                "mass_range_low" = .collapse_safe(mass_range[1]),
-                "mass_range_high" = .collapse_safe(mass_range[2]),
-                "polarity" = .collapse_safe(polarity),
-                "batch_positions" = .collapse_safe(batch_positions),
-                "QC_pattern" = .collapse_safe(QC_pattern),
-                "sample_pattern" = .collapse_safe(sample_pattern),
-                "int_std_id" = .collapse_safe(int_std_id),
-                "screening_mode" = .collapse_safe(screening_mode),
-                "rt_alignment" = .collapse_safe(rt_alignment),
-                "plots_samples" = .collapse_safe(plots_samples),
-                "plots_QC" = .collapse_safe(plots_QC),
-                "diagnostic_plots" = .collapse_safe(diagnostic_plots),
-                "max_int_filter" = .collapse_safe(max_int_filter),
-                "smoothing" = .collapse_safe(smoothing),
-                stringsAsFactors = FALSE
+              "ppm" = .collapse_safe(ppm),
+              "rtdev" = .collapse_safe(rtdev),
+              "mass_range_low" = .collapse_safe(mass_range[1]),
+              "mass_range_high" = .collapse_safe(mass_range[2]),
+              "polarity" = .collapse_safe(polarity),
+              "batch_positions" = .collapse_safe(batch_positions),
+              "QC_pattern" = .collapse_safe(QC_pattern),
+              "sample_pattern" = .collapse_safe(sample_pattern),
+              "int_std_id" = .collapse_safe(int_std_id),
+              "screening_mode" = .collapse_safe(screening_mode),
+              "rt_alignment" = .collapse_safe(rt_alignment),
+              "plots_samples" = .collapse_safe(plots_samples),
+              "plots_QC" = .collapse_safe(plots_QC),
+              "diagnostic_plots" = .collapse_safe(diagnostic_plots),
+              "max_int_filter" = .collapse_safe(max_int_filter),
+              "smoothing" = .collapse_safe(smoothing),
+              stringsAsFactors = FALSE
             )
-
-            write.csv(t(input_params),
-                file = paste0(output_directory, "input_params.csv"),
-                row.names = TRUE
+            
+            write.csv(
+              t(input_params),
+              file = paste0(output_directory, "input_params.csv"),
+              row.names = TRUE
             )
-
             return(list(auc_table, avg_metrics_table))
         }
+        stopCluster(cl)  # stop parallel processes
     }

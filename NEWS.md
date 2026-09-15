@@ -15,6 +15,15 @@
 ## Change5
 - Made 5 lapply code blocks, added safe_bind() and standardize_results() (necessary for lapply), change checkvalidpeak input/output type (added null handling)
 
+## Change6
+- Parallelization by pblapply
+	- import additional packages
+	- introduce num_cores parameter
+	- setup cluster, clusterevalq (import packages to parallel workers), clusterexport (export functions/variables to parallel workers), stopcluster
+	- disable progress bar, no load balancing
+	- 5 pblapply loops (changed lapply loops to pblapply loops)
+	- Changed max_int_filter null value handling, to fix error "Error in if: missing value where TRUE/FALSE needed"
+	- edited metrics tables generation code (to preserve clean layout for the output csv tables)
 
 # TARDIS 1.0
 

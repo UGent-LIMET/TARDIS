@@ -9,6 +9,10 @@
 ## Change3
 - Made the most basic checkValidPeak function in peaks_with_tardis.R, with no changes to algorithm, only replacing repetitive smoothing code
 
+## Change4
+- Added dataHandling function (deals with different QC_pattern other than only "QC", use MsBackendOfflineSql backend instead of MsBackendMzR), change repetitive parts in tardisPeaks() to use dataHandling(), add package import MsBackendSql
+
+
 # TARDIS 1.0
 
 ## Changes in 1.1.0

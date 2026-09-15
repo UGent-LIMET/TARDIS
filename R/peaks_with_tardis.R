@@ -110,47 +110,108 @@ smoothingSG <- function(tr,
 }
 
 # a function to check if a peak is valid
-checkValidPeak <- function(x, y, rt, int, border, sample_name, compound_info, results) {
+# checkValidPeak <- function(x, y, rt, int, border, sample_name, compound_info, results) {
+# 
+#   if (length(unique(y)) > 1) {
+#     auc <- trapz(x, y)
+#     pop <- length(x)
+#     qscore <- qscoreCalculator(x, y)
+#     #compound_info <- dbData[j, ]
+#     results <- rbind(
+#       results,
+#       data.frame(
+#         Component = compound_info$ID,
+#         Sample = sample_name,
+#         AUC = auc,
+#         MaxInt = int[border[3L]],
+#         SNR = qscore[1],
+#         peak_cor = qscore[2],
+#         foundRT = rt[border[3L]],
+#         pop = pop,
+#         compound_info
+#       )
+#     )
+#   } else {
+#     #compound_info <- dbData[j, ]
+#     
+#     results <- rbind(
+#       results,
+#       data.frame(
+#         Component = compound_info$ID,
+#         Sample = sample_name,
+#         AUC = NA,
+#         MaxInt = NA,
+#         SNR = NA,
+#         peak_cor = NA,
+#         foundRT = NA,
+#         pop = NA,
+#         compound_info
+#       )
+#     )
+#   }
+#   return(results)
+# }
 
-  if (length(unique(y)) > 1) {
-    auc <- trapz(x, y)
+# a function to check if a peak is valid
+checkValidPeak <- function(x, y, d, sample_name, int, rt, border) {
+  # if there is NA, impute via Linear Interpolation
+  if (anyNA(x)) {
+    x <- imputeLinInterpol(x)
+  }
+  if (anyNA(y)) {
+    y <- imputeLinInterpol(y)
+  }
+  # Force consistent scalar outputs
+  if (length(unique(y)) > 1 && !any(is.na(border))) {
+    
+    auc <- pracma::trapz(x, y)
     pop <- length(x)
     qscore <- qscoreCalculator(x, y)
-    #compound_info <- dbData[j, ]
-    results <- rbind(
-      results,
-      data.frame(
-        Component = compound_info$ID,
-        Sample = sample_name,
-        AUC = auc,
-        MaxInt = int[border[3L]],
-        SNR = qscore[1],
-        peak_cor = qscore[2],
-        foundRT = rt[border[3L]],
-        pop = pop,
-        compound_info
-      )
-    )
-  } else {
-    #compound_info <- dbData[j, ]
     
-    results <- rbind(
-      results,
-      data.frame(
-        Component = compound_info$ID,
-        Sample = sample_name,
-        AUC = NA,
-        MaxInt = NA,
-        SNR = NA,
-        peak_cor = NA,
-        foundRT = NA,
-        pop = NA,
-        compound_info
-      )
+    MaxInt_val <- ifelse(length(int) >= border[3L], int[border[3L]], NA)
+    foundRT_val <- ifelse(length(rt) >= border[3L], rt[border[3L]], NA)
+    
+    out <- data.frame(
+      Component = as.character(d$ID),
+      Sample = as.character(sample_name),
+      AUC = as.numeric(auc),
+      MaxInt = as.numeric(MaxInt_val),
+      SNR = as.numeric(qscore[1]),
+      peak_cor = as.numeric(qscore[2]),
+      foundRT = as.numeric(foundRT_val),
+      pop = as.numeric(pop),
+      ID = as.character(d$ID),
+      NAME = as.character(d$NAME),
+      mz = as.numeric(d$`m/z`),
+      tr = as.numeric(d$tr),
+      stringsAsFactors = FALSE
+    )
+    
+  } else {
+    
+    out <- data.frame(
+      Component = as.character(d$ID),
+      Sample = as.character(sample_name),
+      AUC = NA_real_,
+      MaxInt = NA_real_,
+      SNR = NA_real_,
+      peak_cor = NA_real_,
+      foundRT = NA_real_,
+      pop = NA_real_,
+      ID = as.character(d$ID),
+      NAME = as.character(d$NAME),
+      mz = as.numeric(d$`m/z`),
+      tr = as.numeric(d$tr),
+      stringsAsFactors = FALSE
     )
   }
-  return(results)
+  
+  colnames(out) <- c("Component", "Sample", "AUC", "MaxInt",
+                     "SNR", "peak_cor", "foundRT", "pop", "ID", "NAME", "mz", "tr") # Force the names here
+  
+  return(out)
 }
+
 
 # function for data handling
 dataHandling <- function(files, string, QC_pattern, polarity){
@@ -199,6 +260,60 @@ dataHandling <- function(files, string, QC_pattern, polarity){
   data <- linkSampleData(data, with = "sampleData.raw_file = spectra.dataOrigin")
   
   return (data)
+}
+
+# edited null handling (leading to null plots)
+standardize_results <- function(df) {
+  required_cols <- c(
+    "Component", "Sample", "AUC", "MaxInt",
+    "SNR", "peak_cor", "foundRT", "pop",
+    "ID", "NAME", "mz", "tr"
+  )
+  
+  # 1. Ensure it's a data frame
+  df <- as.data.frame(df)
+  
+  # 2. Add missing columns with correct types to avoid logical NAs in numeric cols
+  missing <- setdiff(required_cols, colnames(df))
+  for (m in missing) df[[m]] <- NA
+  
+  # 3. Handle list-columns safely without changing row count
+  df[] <- lapply(df, function(x) {
+    if (is.list(x)) {
+      # Replace empty list elements with NA, take only 1st element of others
+      sapply(x, function(el) if (length(el) == 0) NA else el[1])
+    } else {
+      x
+    }
+  })
+  
+  # 4. Strict selection and ordering (Avoids manual renaming later)
+  df <- df[, required_cols, drop = FALSE]
+  
+  colnames(df) <- c("Component", "Sample", "AUC", "MaxInt",
+                    "SNR", "peak_cor", "foundRT", "pop", "ID", "NAME", "mz", "tr") # Force the names here
+  
+  return(df)
+}
+
+# edited null handling (leading to null plots)
+safe_bind <- function(x) {
+  # 1. Filter out non-dataframes or empty ones
+  x <- Filter(function(df) is.data.frame(df) && nrow(df) > 0, x)
+  if (length(x) == 0) return(NULL)
+  
+  # 2. Standardize each DF before binding
+  x <- lapply(x, standardize_results)
+  
+  # 3. Combine - since they are now identical in structure, this is safe
+  out <- dplyr::bind_rows(x)
+  
+  # 4. Final Type Conversion (Ensure numeric columns aren't characters)
+  numeric_cols <- c("AUC", "MaxInt", "SNR", "peak_cor", "foundRT", "mz", "tr")
+  out[numeric_cols] <- lapply(out[numeric_cols], as.numeric)
+  
+  rownames(out) <- NULL
+  return(out)
 }
 
 
@@ -319,37 +434,57 @@ tardisPeaks <-
                 int_std <- c()
                 ## Retrieve foundRT of internal standards in QC's,
                 ## loop over all samples and all internal standards
-                for (j in 1:dim(internal_standards_rt)[1]) {
-                    rt_list <- list()
-                    int_list <- list()
-                    x_list <- list()
-                    y_list <- list()
-                    for (i in 1:length(sample_names)) {
-                        sample_name <- unlist(sample_names[i])
-                        
-                        res <- smoothingSG(
-                          dbData_std$tr[j],
-                          unique(dataOrigin(spectra_QC))[i],
-                          spectra_QC,
-                          internal_standards_rt[j, ],
-                          internal_standards_mz[j, ],
-                          smoothing
-                        )
-                        rt <- res$rt
-                        int <- res$int
-                        border <- res$border
-
-                        # Save found RT for internal standard target
-                        int_std_foundrt <-
-                            cbind(int_std_foundrt, rt[border[3L]]) # this will finally contain
-                        # all found rts for the different internal standards in this sample
-                    }
-
-                    ## this will contain all the found rts in all samples
-                    int_std <-
-                        rbind(int_std, int_std_foundrt)
-                    int_std_foundrt <- c()
-                }
+                # for (j in 1:dim(internal_standards_rt)[1]) {
+                #     rt_list <- list()
+                #     int_list <- list()
+                #     x_list <- list()
+                #     y_list <- list()
+                #     for (i in 1:length(sample_names)) {
+                #         sample_name <- unlist(sample_names[i])
+                #         
+                #         res <- smoothingSG(
+                #           dbData_std$tr[j],
+                #           unique(dataOrigin(spectra_QC))[i],
+                #           spectra_QC,
+                #           internal_standards_rt[j, ],
+                #           internal_standards_mz[j, ],
+                #           smoothing
+                #         )
+                #         rt <- res$rt
+                #         int <- res$int
+                #         border <- res$border
+                # 
+                #         # Save found RT for internal standard target
+                #         int_std_foundrt <-
+                #             cbind(int_std_foundrt, rt[border[3L]]) # this will finally contain
+                #         # all found rts for the different internal standards in this sample
+                #     }
+                # 
+                #     ## this will contain all the found rts in all samples
+                #     int_std <-
+                #         rbind(int_std, int_std_foundrt)
+                #     int_std_foundrt <- c()
+                # }
+                
+                # lapply code block
+                results_list1 <- lapply(1:nrow(internal_standards_rt), function(j) {
+                  local_found_rt <- numeric(length(sample_names))
+                  for (i in 1:length(sample_names)) {
+                    res <- smoothingSG(
+                                dbData_std$tr[j],
+                                unique(dataOrigin(spectra_QC))[i],
+                                spectra_QC,
+                                internal_standards_rt[j, ],
+                                internal_standards_mz[j, ],
+                                smoothing
+                              )
+                    local_found_rt[i] <- res$rt[res$border[3L]]  # rt of peak
+                  }
+                  return(local_found_rt)
+                }, cl = cl)   # results_list1: list of lists
+                
+                int_std <- do.call(rbind, results_list1)
+                
                 ## Define parameters for retention time adjustment, based on the QC's
                 ## and the internal standards
                 param <-
@@ -367,51 +502,116 @@ tardisPeaks <-
             sample_names <-
                 lapply(data_QC@sampleData$spectraOrigin, basename)
 
-            for (j in 1:dim(rtRanges)[1]) {
-                rt_list <- list()
-                int_list <- list()
-                x_list <- list()
-                y_list <- list()
-                for (i in 1:length(sample_names)) {
-                    sample_name <- unlist(sample_names[i])
-                    
-                    res <- smoothingSG(
-                      dbData$tr[j],
-                      unique(dataOrigin(spectra_QC))[i],
-                      spectra_QC,
-                      rtRanges[j, ],
-                      mzRanges[j, ],
-                      smoothing
-                    )
-                    rt <- res$rt
-                    int <- res$int
-                    border <- res$border
-                    
-                    idx <- border[1L]:border[2L]
-                    x <- rt[idx]
-                    y <- int[idx]
-                    rt_list <- c(rt_list, list(rt))
-                    int_list <- c(int_list, list(int))
-                    x_list <- c(x_list, list(x))
-                    y_list <- c(y_list, list(y))
-                    
-                    results_screening <- checkValidPeak(x, y, rt, int, border, sample_name, dbData[j, ], results_screening)
-                }
-                # Create and save the plot for the current component
-                batchnr <- 1
-                if (diagnostic_plots == TRUE) {
-                    plotDiagnostic(
-                        compound_info,
-                        output_directory,
-                        rt_list,
-                        int_list,
-                        x_list,
-                        y_list,
-                        batchnr,
-                        sample_names
-                    )
-                }
-            }
+            # for (j in 1:dim(rtRanges)[1]) {
+            #     rt_list <- list()
+            #     int_list <- list()
+            #     x_list <- list()
+            #     y_list <- list()
+            #     for (i in 1:length(sample_names)) {
+            #         sample_name <- unlist(sample_names[i])
+            #         
+            #         res <- smoothingSG(
+            #           dbData$tr[j],
+            #           unique(dataOrigin(spectra_QC))[i],
+            #           spectra_QC,
+            #           rtRanges[j, ],
+            #           mzRanges[j, ],
+            #           smoothing
+            #         )
+            #         rt <- res$rt
+            #         int <- res$int
+            #         border <- res$border
+            #         
+            #         idx <- border[1L]:border[2L]
+            #         x <- rt[idx]
+            #         y <- int[idx]
+            #         rt_list <- c(rt_list, list(rt))
+            #         int_list <- c(int_list, list(int))
+            #         x_list <- c(x_list, list(x))
+            #         y_list <- c(y_list, list(y))
+            #         
+            #         results_screening <- checkValidPeak(x, y, rt, int, border, sample_name, dbData[j, ], results_screening)
+            #     }
+            #     # Create and save the plot for the current component
+            #     batchnr <- 1
+            #     if (diagnostic_plots == TRUE) {
+            #         plotDiagnostic(
+            #             compound_info,
+            #             output_directory,
+            #             rt_list,
+            #             int_list,
+            #             x_list,
+            #             y_list,
+            #             batchnr,
+            #             sample_names
+            #         )
+            #     }
+            # }
+            
+            # lapply code block (j = internal standards)
+            results_list2 <- lapply(1:dim(rtRanges)[1], function(j) {  # for all target compounds
+              compound_info <- dbData[j, ]  # id, name, mz, rt
+              rt_list <- vector("list", length(sample_names))
+              int_list <- vector("list", length(sample_names))
+              x_list <- vector("list", length(sample_names))
+              y_list <- vector("list", length(sample_names))
+              results_screening_row <- vector("list", length(sample_names))
+              #output_cache <- vector("list", length(dim(rtRanges)[1]))
+              
+              compound_results <- list() # store each sample's results
+              for (i in 1:length(sample_names)) {
+                res <- smoothingSG(
+                            dbData$tr[j],
+                            unique(dataOrigin(spectra_QC))[i],
+                            spectra_QC,
+                            rtRanges[j, ],
+                            mzRanges[j, ],
+                            smoothing
+                          )
+                rt <- if(is.null(res$rt)) NULL else res$rt
+                int <- if(is.null(res$int)) NULL else res$int
+                border <- if(is.null(res$border)) NULL else res$border
+                
+                idx <- border[1L]:border[2L]
+                x <- rt[idx]
+                y <- int[idx]
+                
+                rt_list[[i]] <- rt
+                int_list[[i]] <- int
+                x_list[[i]] <- x
+                y_list[[i]] <- y
+                
+                results_screening_row[[i]] <- checkValidPeak(x,
+                                                             y,
+                                                             compound_info,
+                                                             sample_names[i],
+                                                             int,
+                                                             rt,
+                                                             border)
+              }
+              #Create and save the plot for the current component
+              batchnr <- 1
+              if (diagnostic_plots == TRUE) {
+                plotDiagnostic(
+                  compound_info,
+                  output_directory,
+                  rt_list,
+                  int_list,
+                  x_list,
+                  y_list,
+                  batchnr,
+                  sample_names
+                  #QC_pattern
+                )
+              }
+              
+              return(safe_bind(results_screening_row))
+            }, cl=cl)
+            
+            # Combine and standardize result
+            results_screening <- safe_bind(results_list2)
+            results_screening <- standardize_results(results_screening)
+            
             avg_metrics_table <- results_screening %>%
                 group_by(Component) %>%
                 summarise_at(vars(-Sample), list(~ if (is.numeric(.)) {
@@ -477,33 +677,53 @@ tardisPeaks <-
                         lapply(data_QC@sampleData$spectraOrigin, basename)
                     int_std_foundrt <- c()
                     int_std <- c()
-                    for (j in 1:dim(internal_standards_rt)[1]) {
-                        rt_list <- list()
-                        int_list <- list()
-                        x_list <- list()
-                        y_list <- list()
-                        for (i in 1:length(sample_names)) {
-                            sample_name <- unlist(sample_names[i])
-                            
-                            res <- smoothingSG(
-                              dbData_std$tr[j],
-                              unique(dataOrigin(spectra_QC))[i],
-                              spectra_QC,
-                              internal_standards_rt[j, ],
-                              internal_standards_mz[j, ],
-                              smoothing
-                            )
-                            rt <- res$rt
-                            int <- res$int
-                            border <- res$border
-                            
-                            int_std_foundrt <-
-                                cbind(int_std_foundrt, rt[border[3L]])
-                        }
-                        int_std <-
-                            rbind(int_std, int_std_foundrt)
-                        int_std_foundrt <- c()
-                    }
+                    # for (j in 1:dim(internal_standards_rt)[1]) {
+                    #     rt_list <- list()
+                    #     int_list <- list()
+                    #     x_list <- list()
+                    #     y_list <- list()
+                    #     for (i in 1:length(sample_names)) {
+                    #         sample_name <- unlist(sample_names[i])
+                    #         
+                    #         res <- smoothingSG(
+                    #           dbData_std$tr[j],
+                    #           unique(dataOrigin(spectra_QC))[i],
+                    #           spectra_QC,
+                    #           internal_standards_rt[j, ],
+                    #           internal_standards_mz[j, ],
+                    #           smoothing
+                    #         )
+                    #         rt <- res$rt
+                    #         int <- res$int
+                    #         border <- res$border
+                    #         
+                    #         int_std_foundrt <-
+                    #             cbind(int_std_foundrt, rt[border[3L]])
+                    #     }
+                    #     int_std <-
+                    #         rbind(int_std, int_std_foundrt)
+                    #     int_std_foundrt <- c()
+                    # }
+                    # lapply code block
+                    results_list3 <- lapply(1:dim(internal_standards_rt)[1], function(j) {
+                      local_found_rt <- numeric(length(sample_names))
+                      
+                      for (i in 1:length(sample_names)) {
+                        res <- smoothingSG(
+                                    dbData_std$tr[j],
+                                    unique(dataOrigin(spectra_QC))[i],
+                                    spectra_QC,
+                                    internal_standards_rt[j, ],
+                                    internal_standards_mz[j, ],
+                                    smoothing
+                                  )
+                        local_found_rt[i] <- if(is.null(res$border) || is.null(res$rt)) NULL else res$rt[res$border[3L]]  # rt of peak
+                      }
+                      
+                      return(local_found_rt)
+                    }, cl=cl) # results_list3: list of lists
+                    int_std <- do.call(rbind, results_list3)
+                    
                     param <-
                         PeakGroupsParam(
                             minFraction = 0.9,
@@ -529,50 +749,109 @@ tardisPeaks <-
                     } else {
                         spectra_QC <- data_QC@spectra
                     }
-                    for (j in 1:dim(rtRanges)[1]) {
-                        rt_list <- list()
-                        int_list <- list()
-                        x_list <- list()
-                        y_list <- list()
-                        for (i in 1:length(sample_names)) {
-                            sample_name <- unlist(sample_names[i])
-                            
-                            res <- smoothingSG(
-                              dbData$tr[j],
-                              unique(dataOrigin(spectra_QC))[i],
-                              spectra_QC,
-                              rtRanges[j, ],
-                              mzRanges[j, ],
-                              smoothing
-                            )
-                            rt <- res$rt
-                            int <- res$int
-                            border <- res$border
-                            
-                            idx <- border[1L]:border[2L]
-                            x <- rt[idx]
-                            y <- int[idx]
-                            rt_list <- c(rt_list, list(rt))
-                            int_list <- c(int_list, list(int))
-                            x_list <- c(x_list, list(x))
-                            y_list <- c(y_list, list(y))
-                            
-                            results_QCs_batch <- checkValidPeak(x, y, rt, int, border, sample_name, dbData[j, ], results_QCs_batch)
-                        }
-                        if (plots_QC == TRUE) {
-                            plotQCs(
-                                compound_info,
-                                output_directory,
-                                rt_list,
-                                int_list,
-                                x_list,
-                                y_list,
-                                batchnr,
-                                sample_names
-                            )
-                        }
-                    }
-                    results_QCs <- rbind(results_QCs, results_QCs_batch)
+                    # for (j in 1:dim(rtRanges)[1]) {
+                    #     rt_list <- list()
+                    #     int_list <- list()
+                    #     x_list <- list()
+                    #     y_list <- list()
+                    #     for (i in 1:length(sample_names)) {
+                    #         sample_name <- unlist(sample_names[i])
+                    #         
+                    #         res <- smoothingSG(
+                    #           dbData$tr[j],
+                    #           unique(dataOrigin(spectra_QC))[i],
+                    #           spectra_QC,
+                    #           rtRanges[j, ],
+                    #           mzRanges[j, ],
+                    #           smoothing
+                    #         )
+                    #         rt <- res$rt
+                    #         int <- res$int
+                    #         border <- res$border
+                    #         
+                    #         idx <- border[1L]:border[2L]
+                    #         x <- rt[idx]
+                    #         y <- int[idx]
+                    #         rt_list <- c(rt_list, list(rt))
+                    #         int_list <- c(int_list, list(int))
+                    #         x_list <- c(x_list, list(x))
+                    #         y_list <- c(y_list, list(y))
+                    #         
+                    #         results_QCs_batch <- checkValidPeak(x, y, rt, int, border, sample_name, dbData[j, ], results_QCs_batch)
+                    #     }
+                    #     if (plots_QC == TRUE) {
+                    #         plotQCs(
+                    #             compound_info,
+                    #             output_directory,
+                    #             rt_list,
+                    #             int_list,
+                    #             x_list,
+                    #             y_list,
+                    #             batchnr,
+                    #             sample_names
+                    #         )
+                    #     }
+                    # }
+                    # lapply code block
+                    results_list4 <- lapply(1:dim(rtRanges)[1], function(j) {
+                      compound_info <- dbData[j, ]
+                      rt_list <- vector("list", length(sample_names))
+                      int_list <- vector("list", length(sample_names))
+                      x_list <- vector("list", length(sample_names))
+                      y_list <- vector("list", length(sample_names))
+                      results_QCs_batch_row <- vector("list", length(sample_names))
+                      
+                      for (i in 1:length(sample_names)) {
+                        res <- smoothingSG(
+                                    dbData$tr[j],
+                                    unique(dataOrigin(spectra_QC))[i],
+                                    spectra_QC,
+                                    rtRanges[j, ],
+                                    mzRanges[j, ],
+                                    smoothing
+                                  )
+                        rt <- if(is.null(res$rt)) NULL else res$rt
+                        int <- if(is.null(res$int)) NULL else res$int
+                        border <- if(is.null(res$border)) NULL else res$border
+                        
+                        idx <- border[1L]:border[2L]
+                        x <- rt[idx]
+                        y <- int[idx]
+                        rt_list[[i]] <- rt
+                        int_list[[i]] <- int
+                        x_list[[i]] <- x
+                        y_list[[i]] <- y
+                        
+                        results_QCs_batch_row[[i]] <- checkValidPeak(x,
+                                                                     y,
+                                                                     dbData[j, ],
+                                                                     sample_names[i],
+                                                                     int,
+                                                                     rt,
+                                                                     border)  # is a 1-row dataframe
+                      }
+                      # Create and save the plot for the current component
+                      batchnr <- 1
+                      if (plots_QC == TRUE) {
+                        plotQCs(
+                          compound_info,
+                          output_directory,
+                          rt_list,
+                          int_list,
+                          x_list,
+                          y_list,
+                          batchnr,
+                          sample_names
+                        )
+                      }
+                      return(safe_bind(results_QCs_batch_row))
+                    }, cl=cl)
+                    
+                    # Combine and standardize result
+                    results_QCs_batch <- safe_bind(results_list4)
+                    results_QCs_batch <- standardize_results(results_QCs_batch)
+                    
+                    #results_QCs <- rbind(results_QCs, results_QCs_batch)
                     ## Replace rtmed with average foundRT from previous results
                     new_rt_avg <- results_QCs_batch %>%
                         group_by(ID) %>%
@@ -604,63 +883,137 @@ tardisPeaks <-
                     spectra <- data_batch@spectra
                 }
 
-                for (j in 1:dim(rtRanges)[1]) {
-                    rt_list <- list()
-                    int_list <- list()
-                    x_list <- list()
-                    y_list <- list()
-                    for (i in 1:length(sample_names)) {
-                        sample_name <- unlist(sample_names[i])
-                        
-                        res <- smoothingSG(
-                          dbData$tr[j],
-                          unique(dataOrigin(spectra))[i],
-                          spectra,
-                          rtRanges[j, ],
-                          mzRanges[j, ],
-                          smoothing
-                        )
-                        rt <- res$rt
-                        int <- res$int
-                        border <- res$border
-                        
-                        idx <- border[1L]:border[2L]
-                        x <- rt[idx]
-                        y <- int[idx]
-                        rt_list <- c(rt_list, list(rt))
-                        int_list <- c(int_list, list(int))
-                        x_list <- c(x_list, list(x))
-                        y_list <- c(y_list, list(y))
-
-                        results_samples <- checkValidPeak(x, y, rt, int, border, sample_name, dbData[j, ], results_samples)
-                    }
-                    if (plots_samples == TRUE) {
-                        plotSamples(
-                            compound_info,
-                            output_directory,
-                            rt_list,
-                            int_list,
-                            x_list,
-                            y_list,
-                            batchnr,
-                            sample_names
-                        )
-                    }
-                    if (diagnostic_plots == TRUE) {
-                        plotDiagnostic(
-                            compound_info,
-                            output_directory,
-                            rt_list,
-                            int_list,
-                            x_list,
-                            y_list,
-                            batchnr,
-                            sample_names
-                        )
-                    }
-                }
+                # for (j in 1:dim(rtRanges)[1]) {
+                #     rt_list <- list()
+                #     int_list <- list()
+                #     x_list <- list()
+                #     y_list <- list()
+                #     for (i in 1:length(sample_names)) {
+                #         sample_name <- unlist(sample_names[i])
+                #         
+                #         res <- smoothingSG(
+                #           dbData$tr[j],
+                #           unique(dataOrigin(spectra))[i],
+                #           spectra,
+                #           rtRanges[j, ],
+                #           mzRanges[j, ],
+                #           smoothing
+                #         )
+                #         rt <- res$rt
+                #         int <- res$int
+                #         border <- res$border
+                #         
+                #         idx <- border[1L]:border[2L]
+                #         x <- rt[idx]
+                #         y <- int[idx]
+                #         rt_list <- c(rt_list, list(rt))
+                #         int_list <- c(int_list, list(int))
+                #         x_list <- c(x_list, list(x))
+                #         y_list <- c(y_list, list(y))
+                # 
+                #         results_samples <- checkValidPeak(x, y, rt, int, border, sample_name, dbData[j, ], results_samples)
+                #     }
+                #     if (plots_samples == TRUE) {
+                #         plotSamples(
+                #             compound_info,
+                #             output_directory,
+                #             rt_list,
+                #             int_list,
+                #             x_list,
+                #             y_list,
+                #             batchnr,
+                #             sample_names
+                #         )
+                #     }
+                #     if (diagnostic_plots == TRUE) {
+                #         plotDiagnostic(
+                #             compound_info,
+                #             output_directory,
+                #             rt_list,
+                #             int_list,
+                #             x_list,
+                #             y_list,
+                #             batchnr,
+                #             sample_names
+                #         )
+                #     }
+                # }
+                # lapply code block
+                results_list5 <- lapply(1:dim(rtRanges)[1], function(j){
+                  compound_info <- dbData[j, ]
+                  rt_list <- vector("list", length(sample_names))
+                  int_list <- vector("list", length(sample_names))
+                  x_list <- vector("list", length(sample_names))
+                  y_list <- vector("list", length(sample_names))
+                  results_samples_row <- vector("list", length(sample_names))
+                  
+                  for (i in 1:length(sample_names)) {
+                    res <- smoothingSG(
+                                dbData$tr[j],
+                                unique(dataOrigin(spectra))[i],
+                                spectra,
+                                rtRanges[j, ],
+                                mzRanges[j, ],
+                                smoothing
+                              )
+                    rt <- if(is.null(res$rt)) NULL else res$rt
+                    int <- if(is.null(res$int)) NULL else res$int
+                    border <- if(is.null(res$border)) NULL else res$border
+                    
+                    idx <- border[1L]:border[2L]
+                    x <- rt[idx]
+                    y <- int[idx]
+                    rt_list[[i]] <- rt
+                    int_list[[i]] <- int
+                    x_list[[i]] <- x
+                    y_list[[i]] <- y
+                    
+                    results_samples_row[[i]] <- checkValidPeak(x,
+                                                               y,
+                                                               dbData[j, ],
+                                                               sample_names[i],
+                                                               int,
+                                                               rt,
+                                                               border)
+                    
+                  }
+                  if (plots_samples == TRUE) {
+                    plotSamples(
+                      compound_info,
+                      output_directory,
+                      rt_list,
+                      int_list,
+                      x_list,
+                      y_list,
+                      batchnr,
+                      sample_names
+                      #STD_pattern
+                    )
+                  }
+                  if (diagnostic_plots == TRUE) {
+                    plotDiagnostic(
+                      compound_info,
+                      output_directory,
+                      rt_list,
+                      int_list,
+                      x_list,
+                      y_list,
+                      batchnr,
+                      sample_names
+                      #QC_pattern
+                    )
+                  }
+                  return (safe_bind(results_samples_row))
+                }, cl=cl)
+                
+                # Combine dataframes
+                results_samples <- safe_bind(results_list5)
+                results_samples <- standardize_results(results_samples)
             }
-            results <- results_samples
+            results <- results_samples  # 1 batch, same copy
+            results <- standardize_results(results)
+            # }
+            # results <- results_samples
 
             if (is.null(max_int_filter) == FALSE && max_int_filter != 0) {
                 results <- results[which(results$MaxInt >= max_int_filter), ]

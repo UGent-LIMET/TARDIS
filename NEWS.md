@@ -12,6 +12,9 @@
 ## Change4
 - Added dataHandling function (deals with different QC_pattern other than only "QC", use MsBackendOfflineSql backend instead of MsBackendMzR), change repetitive parts in tardisPeaks() to use dataHandling(), add package import MsBackendSql
 
+## Change5
+- Made 5 lapply code blocks, added safe_bind() and standardize_results() (necessary for lapply), change checkvalidpeak input/output type (added null handling)
+
 
 # TARDIS 1.0
 

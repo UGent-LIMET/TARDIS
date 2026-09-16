@@ -41,6 +41,7 @@
 #'
 #' @import MsExperiment
 #' @importFrom Spectra MsBackendMzR
+#' @importFrom Spectra MsBackendSql
 #' @importFrom Spectra filterMzRange
 #' @importFrom Spectra filterEmptySpectra
 #' @importFrom Spectra filterDataOrigin
@@ -173,6 +174,57 @@ checkValidPeak <- function(x, y, rt, int, border, sample_name, compound_info, re
 }
 
 
+# function for data handling
+dataHandling <- function(files, string, QC_pattern, polarity){
+  data <- MsExperiment()
+  experimentFiles(data) <-
+    MsExperimentFiles(mzML = setNames(files, basename(
+      tools::file_path_sans_ext(files)
+    )))
+  
+  sampleData(data) <- DataFrame(sample_index = 1:length(files),
+                                spectraOrigin = files)
+  if (string == "QC_files"){
+    sampleData(data)$type <- QC_pattern
+  }
+  if (string == "files_batch"){
+    # Define study and QC samples --> all not QC files are deemed study files
+    sampleData(data)$type <- "study"
+    sampleData(data)$type[grep(pattern = QC_pattern, files)] <- QC_pattern
+  }
+  
+  # --- CHANGED: build a temp SQLite DB, populate it once, use OfflineSql ---
+  db_path <- tempfile(fileext = ".sqlite")
+  sp_init <- Spectra(
+    experimentFiles(data)[["mzML"]],
+    backend  = MsBackendMzR(),
+    BPPARAM  = SnowParam(workers = 1L)
+  )
+  sp <- setBackend(sp_init,
+                   MsBackendOfflineSql(),
+                   drv    = SQLite(),          # ← driver passed to setBackend
+                   dbname = db_path,           # ← dbname passed to setBackend
+                   BPPARAM = SnowParam(workers = 1L))
+  
+  # sp <- Spectra(
+  #   experimentFiles(data)[["mzML"]],
+  #   backend  = MsBackendMzR()
+  #   #BPPARAM  = SnowParam(workers = 1L)
+  # )
+  if (polarity == "positive") {
+    spectra(data) <- filterPolarity(sp, 1)
+  } else if (polarity == "negative") {
+    spectra(data) <- filterPolarity(sp, 0)
+  }
+  
+  sampleData(data)$raw_file <- normalizePath(files)
+  data <- linkSampleData(data, with = "sampleData.raw_file = spectra.dataOrigin")
+  
+  return (data)
+}
+
+
+
 ## jo: wouldn't it be better to call the function on a data object instead
 ## of a file path? The (advanced) user could eventually do some more quality
 ## checks on the data before?
@@ -257,37 +309,38 @@ tardisPeaks <-
                 QC_files <-
                     files[grep(pattern = QC_pattern, files)]
 
-                data_QC <- MsExperiment()
-                experimentFiles(data_QC) <-
-                    MsExperimentFiles(
-                        mzML = setNames(
-                            QC_files,
-                            basename(tools::file_path_sans_ext(QC_files))
-                        )
-                    )
-
-                sampleData(data_QC) <- DataFrame(
-                    sample_index = 1:length(QC_files),
-                    spectraOrigin = QC_files
-                )
-                sampleData(data_QC)$type <- "QC"
-
-                sp <- Spectra(experimentFiles(data_QC)[["mzML"]],
-                    backend = MsBackendMzR(),
-                    BPPARAM = SnowParam(workers = 1L)
-                )
-
-                if (polarity == "positive") {
-                    spectra(data_QC) <- filterPolarity(sp, 1)
-                } else if (polarity == "negative") {
-                    spectra(data_QC) <- filterPolarity(sp, 0)
-                }
-
-                sampleData(data_QC)$raw_file <- normalizePath(QC_files)
-                data_QC <- linkSampleData(
-                    data_QC,
-                    with = "sampleData.raw_file = spectra.dataOrigin"
-                )
+                # data_QC <- MsExperiment()
+                # experimentFiles(data_QC) <-
+                #     MsExperimentFiles(
+                #         mzML = setNames(
+                #             QC_files,
+                #             basename(tools::file_path_sans_ext(QC_files))
+                #         )
+                #     )
+                # 
+                # sampleData(data_QC) <- DataFrame(
+                #     sample_index = 1:length(QC_files),
+                #     spectraOrigin = QC_files
+                # )
+                # sampleData(data_QC)$type <- "QC"
+                # 
+                # sp <- Spectra(experimentFiles(data_QC)[["mzML"]],
+                #     backend = MsBackendMzR(),
+                #     BPPARAM = SnowParam(workers = 1L)
+                # )
+                # 
+                # if (polarity == "positive") {
+                #     spectra(data_QC) <- filterPolarity(sp, 1)
+                # } else if (polarity == "negative") {
+                #     spectra(data_QC) <- filterPolarity(sp, 0)
+                # }
+                # 
+                # sampleData(data_QC)$raw_file <- normalizePath(QC_files)
+                # data_QC <- linkSampleData(
+                #     data_QC,
+                #     with = "sampleData.raw_file = spectra.dataOrigin"
+                # )
+                data_QC <- dataHandling(QC_files, "QC_files", QC_pattern, polarity)
             } else {
                 data_QC <- lcmsData[which(sampleData(lcmsData)$type == QC_pattern)]
             }
@@ -560,41 +613,42 @@ tardisPeaks <-
                     files_batch <-
                         files[batch_positions[[batchnr]][1]:batch_positions[[batchnr]][2]]
 
-                    data_batch <- MsExperiment()
-                    experimentFiles(data_batch) <-
-                        MsExperimentFiles(
-                            mzML = setNames(
-                                files_batch,
-                                basename(tools::file_path_sans_ext(files_batch))
-                            )
-                        )
-
-                    sampleData(data_batch) <- DataFrame(
-                        sample_index = 1:length(files_batch),
-                        spectraOrigin = files_batch
-                    )
-                    # Define study and QC samples --> all not QC files are deemed study files
-                    sampleData(data_batch)$type <- "study"
-                    sampleData(data_batch)$type[grep(
-                        pattern = QC_pattern,
-                        files_batch
-                    )] <- "QC"
-
-                    sp <- Spectra(experimentFiles(data_batch)[["mzML"]],
-                        backend = MsBackendMzR(),
-                        BPPARAM = SnowParam(workers = 1L)
-                    )
-                    if (polarity == "positive") {
-                        spectra(data_batch) <- filterPolarity(sp, 1)
-                    } else if (polarity == "negative") {
-                        spectra(data_batch) <- filterPolarity(sp, 0)
-                    }
-
-                    sampleData(data_batch)$raw_file <- normalizePath(files_batch)
-                    data_batch <- linkSampleData(
-                        data_batch,
-                        with = "sampleData.raw_file = spectra.dataOrigin"
-                    )
+                    # data_batch <- MsExperiment()
+                    # experimentFiles(data_batch) <-
+                    #     MsExperimentFiles(
+                    #         mzML = setNames(
+                    #             files_batch,
+                    #             basename(tools::file_path_sans_ext(files_batch))
+                    #         )
+                    #     )
+                    # 
+                    # sampleData(data_batch) <- DataFrame(
+                    #     sample_index = 1:length(files_batch),
+                    #     spectraOrigin = files_batch
+                    # )
+                    # # Define study and QC samples --> all not QC files are deemed study files
+                    # sampleData(data_batch)$type <- "study"
+                    # sampleData(data_batch)$type[grep(
+                    #     pattern = QC_pattern,
+                    #     files_batch
+                    # )] <- "QC"
+                    # 
+                    # sp <- Spectra(experimentFiles(data_batch)[["mzML"]],
+                    #     backend = MsBackendMzR(),
+                    #     BPPARAM = SnowParam(workers = 1L)
+                    # )
+                    # if (polarity == "positive") {
+                    #     spectra(data_batch) <- filterPolarity(sp, 1)
+                    # } else if (polarity == "negative") {
+                    #     spectra(data_batch) <- filterPolarity(sp, 0)
+                    # }
+                    # 
+                    # sampleData(data_batch)$raw_file <- normalizePath(files_batch)
+                    # data_batch <- linkSampleData(
+                    #     data_batch,
+                    #     with = "sampleData.raw_file = spectra.dataOrigin"
+                    # )
+                    data_batch <- dataHandling(files_batch, "files_batch", QC_pattern, polarity)
                 } else {
                     data_batch <- lcmsData[batch_positions[[batchnr]][1]:batch_positions[[batchnr]][2]]
                 }

@@ -3,6 +3,13 @@
 ## Change1
 - Added filterSingle_extractEIC function in extractPeak.R and changed relevant parts in peaks_with_tardis.R to use this new function
 
+## Change2
+- Made the most basic smoothingSG function in peaks_with_tardis.R, with no changes to algorithm, only replacing repetitive smoothing code
+- Added basic NA handling of return values in smoothingSG (not imputing points within the peak) - just to ensure code doesn't crash
+
+## Change3
+- Made the most basic checkValidPeak function in peaks_with_tardis.R, with no changes to algorithm, only replacing repetitive smoothing code
+- Fixed minor bugs
 
 # TARDIS 1.0
 

@@ -1,13 +1,14 @@
 Package: TARDIS
 Title: TArgeted Raw Data Integration In Spectrometry
+	Stepwise code changes and validation (from TARDIS v1.1.0)
 Version: 1.1.0
-Tag: change1
+Tag: change3
 Authors@R:
     c(
      person(given = "Pablo", family = "Vangeenderhuysen",
 	   email = "pablovangeenderhuysen@ugent.be",
 	   role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0002-5492-6904")),
+     comment = c(ORCID = "0000-0002-5492-6904")),
      person(given = "Johannes", family = "Rainer",
 	   email = "johannes.rainer@eurac.edu",
 	   role ="ctb",

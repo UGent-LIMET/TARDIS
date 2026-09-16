@@ -5,32 +5,7 @@
 
 ## Change2
 - Made the most basic smoothingSG function in peaks_with_tardis.R, with no changes to algorithm, only replacing repetitive smoothing code
-
-## Change3
-- Made the most basic checkValidPeak function in peaks_with_tardis.R, with no changes to algorithm, only replacing repetitive smoothing code
-
-## Change4
-- Added dataHandling function (deals with different QC_pattern other than only "QC", use MsBackendOfflineSql backend instead of MsBackendMzR), change repetitive parts in tardisPeaks() to use dataHandling(), add package import MsBackendSql
-
-## Change5
-- Made 5 lapply code blocks, added safe_bind() and standardize_results() (necessary for lapply), change checkvalidpeak input/output type (added null handling)
-
-## Change6
-- Parallelization by pblapply
-	- import additional packages
-	- introduce num_cores parameter
-	- setup cluster, clusterevalq (import packages to parallel workers), clusterexport (export functions/variables to parallel workers), stopcluster
-	- disable progress bar, no load balancing
-	- 5 pblapply loops (changed lapply loops to pblapply loops)
-	- Changed max_int_filter null value handling, to fix error "Error in if: missing value where TRUE/FALSE needed"
-	- edited metrics tables generation code (to preserve clean layout for the output csv tables)
-
-## Change7
-- Memory optimization
-	- filter spectra before pblapply loops
-	- delete unnecessary memory
-	- allocate fixed sizes to objects when initializing
-
+- Added basic NA handling of return values in smoothingSG (not imputing points within the peak) - just to ensure code doesn't crash
 
 # TARDIS 1.0
 

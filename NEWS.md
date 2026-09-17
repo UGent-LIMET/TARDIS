@@ -15,6 +15,10 @@
 - Added dataHandling function (deals with different QC_pattern other than only "QC", use MsBackendOfflineSql backend instead of MsBackendMzR), change repetitive parts in tardisPeaks() to use dataHandling(), add package import MsBackendSql
 - Edited createRanges.R to account for new backend (has some algorithm changes; was arbitrary from the beginning)
 
+## Change5
+- Made 5 lapply code blocks, added safe_bind() and standardize_results() (necessary for lapply), change checkvalidpeak input/output type (added null handling)
+- Changed max_int_filter null value handling, to fix error "Error in if: missing value where TRUE/FALSE needed"
+- edited metrics tables generation code (to preserve clean layout for the output csv tables)
 
 # TARDIS 1.0
 

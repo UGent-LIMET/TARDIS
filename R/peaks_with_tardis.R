@@ -38,6 +38,7 @@
 #' @param smoothing `logical(1)` Smooth the peaks with [sgolayfilt()]
 #' @param max_int_filter `numeric(1)` Disregard peaks with a max. int. lower
 #'     than this value
+#' @param num_cores `numeric(1)` Number of cores to use for parallelization
 #'
 #' @import MsExperiment
 #' @importFrom Spectra MsBackendMzR
@@ -66,6 +67,12 @@
 #' @importFrom dplyr select
 #' @importFrom dplyr first
 #' @importFrom S4Vectors DataFrame
+#' @import xcms
+#' @importFrom dplyr mutate
+#' @importFrom pbapply pboptions
+#' @importFrom pbapply pblapply
+#' @importFrom stats loess
+#' @import parallel
 #'
 #' @return returns `list` with auc table and feature table with summarized
 #'     stats per compound. Outputs plots and other tables to output folder.
@@ -315,7 +322,14 @@ tardisPeaks <-
     int_std_id,
     screening_mode = FALSE,
     smoothing = TRUE,
-    max_int_filter = NULL) {
+    max_int_filter = NULL,
+    num_cores = 1) {
+        # Setup the cluster (num_cores parameter)
+        num_cores <- num_cores
+        cl <- makeCluster(num_cores)
+        # cluster is stopped if there is an error
+        on.exit(stopCluster(cl), add = TRUE)
+        
         results_samples <-
             data.frame(
                 Component = character(0),
@@ -387,6 +401,7 @@ tardisPeaks <-
             spectra_QC <- data_QC@spectra
             checkScans(spectra_QC)
             data_QC@spectra <- spectra_QC
+            all_files <- unique(dataOrigin(spectra_QC))
             ## Create ranges for all compounds
             ranges <- createRanges(data_QC, dbData, ppm, rtdev)
             ## Get mz & rt ranges
@@ -406,42 +421,45 @@ tardisPeaks <-
                 ## Initiate empty vectors
                 int_std_foundrt <- c()
                 int_std <- c()
-                ## Retrieve foundRT of internal standards in QC's,
-                ## loop over all samples and all internal standards
-                # for (j in 1:dim(internal_standards_rt)[1]) {
-                #     rt_list <- list()
-                #     int_list <- list()
-                #     x_list <- list()
-                #     y_list <- list()
-                #     for (i in 1:length(sample_names)) {
-                #         sample_name <- unlist(sample_names[i])
-                #         
-                #         res <- smoothingSG(
-                #           dbData_std$tr[j],
-                #           unique(dataOrigin(spectra_QC))[i],
-                #           spectra_QC,
-                #           internal_standards_rt[j, ],
-                #           internal_standards_mz[j, ],
-                #           smoothing
-                #         )
-                #         rt <- res$rt
-                #         int <- res$int
-                #         border <- res$border
-                # 
-                #         # Save found RT for internal standard target
-                #         int_std_foundrt <-
-                #             cbind(int_std_foundrt, rt[border[3L]]) # this will finally contain
-                #         # all found rts for the different internal standards in this sample
-                #     }
-                # 
-                #     ## this will contain all the found rts in all samples
-                #     int_std <-
-                #         rbind(int_std, int_std_foundrt)
-                #     int_std_foundrt <- c()
-                # }
+                
+                # parallel
+                clusterEvalQ(cl, {
+                  library(MsExperiment) #
+                  library(Spectra)
+                  library(signal) # sgolayfilt
+                  library(xcms) #  # rt alignment - not inside pblapply & imputing missing values (in filter-extract)
+                  library(pracma)   # Required for: trapz() (AUC calculation)
+                  library(BiocParallel) #
+                  #library(tidyr)
+                  #library(writexl)
+                  #library(dplyr)   # Required for: group_by, summarise, etc.
+                  #library(S4Vectors)
+                  library(pbapply)
+                  library(parallel)
+                  library(MsBackendSql)      # <-- ADD (provides MsBackendOfflineSql)
+                  library(DBI)               # <-- ADD (SQLite connection dep)
+                  library(RSQLite)           # <-- ADD
+                  #library(diptest)
+                })
+                
+                # Export everything the workers need to know
+                # This includes variables AND the function smoothingSG
+                # include ls("package:TARDIS"): to update worker processes
+                clusterExport(cl, varlist = c("smoothingSG", "filterSingle_extractEIC"), envir = environment())  # find variables/functions anywhere in the code
+                clusterExport(cl, varlist = c("sample_names", "dbData_std", "all_files",
+                                              "spectra_QC",
+                                              "internal_standards_rt",
+                                              "internal_standards_mz", "smoothing"
+                                              #"pval_cutoff", "smoothing_order"
+                ), envir = environment())  # find variables/functions anywhere in the code
+                
+                # disable progress bar - defaults to parLapply!
+                pboptions(type = "none")
+                # load balancing
+                pboptions(use_lb = FALSE)
                 
                 # lapply code block
-                results_list1 <- lapply(1:nrow(internal_standards_rt), function(j) {
+                results_list1 <- pblapply(1:nrow(internal_standards_rt), function(j) {
                   local_found_rt <- numeric(length(sample_names))
                   for (i in 1:length(sample_names)) {
                     res <- smoothingSG(
@@ -455,7 +473,7 @@ tardisPeaks <-
                     local_found_rt[i] <- res$rt[res$border[3L]]  # rt of peak
                   }
                   return(local_found_rt)
-                })   # results_list1: list of lists
+                }, cl=cl)   # results_list1: list of lists
                 
                 int_std <- do.call(rbind, results_list1)
                 
@@ -473,57 +491,28 @@ tardisPeaks <-
             # Find all targets in x QC's
 
             spectra_QC <- data_QC@spectra
+            all_files <- unique(dataOrigin(spectra_QC))
             sample_names <-
                 lapply(data_QC@sampleData$spectraOrigin, basename)
 
-            # for (j in 1:dim(rtRanges)[1]) {
-            #     rt_list <- list()
-            #     int_list <- list()
-            #     x_list <- list()
-            #     y_list <- list()
-            #     for (i in 1:length(sample_names)) {
-            #         sample_name <- unlist(sample_names[i])
-            #         
-            #         res <- smoothingSG(
-            #           dbData$tr[j],
-            #           unique(dataOrigin(spectra_QC))[i],
-            #           spectra_QC,
-            #           rtRanges[j, ],
-            #           mzRanges[j, ],
-            #           smoothing
-            #         )
-            #         rt <- res$rt
-            #         int <- res$int
-            #         border <- res$border
-            #         
-            #         idx <- border[1L]:border[2L]
-            #         x <- rt[idx]
-            #         y <- int[idx]
-            #         rt_list <- c(rt_list, list(rt))
-            #         int_list <- c(int_list, list(int))
-            #         x_list <- c(x_list, list(x))
-            #         y_list <- c(y_list, list(y))
-            # 
-            #         results_screening <- checkValidPeak(x, y, rt, int, border, sample_name, dbData[j, ], results_screening)
-            #         compound_info <- dbData[j, ]
-            #     }
-            #     # Create and save the plot for the current component
-            #     batchnr <- 1
-            #     if (diagnostic_plots == TRUE) {
-            #         plotDiagnostic(
-            #             compound_info,
-            #             output_directory,
-            #             rt_list,
-            #             int_list,
-            #             x_list,
-            #             y_list,
-            #             batchnr,
-            #             sample_names
-            #         )
-            #     }
-            # }
+            # parallel
+            clusterExport(cl, varlist = c("smoothingSG",
+                                          "filterSingle_extractEIC",
+                                          "checkValidPeak",
+                                          "plotDiagnostic",
+                                          "safe_bind"), envir = environment()) # find the variables in this function, not the global environment!
+            clusterExport(cl, varlist = c("sample_names", "dbData", "all_files",
+                                          "spectra_QC",
+                                          "smoothing",
+                                          "rtRanges", "mzRanges", "diagnostic_plots",
+                                          "output_directory"
+                                          #"pval_cutoff", "QC_pattern", "smoothing_order"
+                                          ), envir = environment()) # find the variables in this function, not the global environment!
+            # load balancing
+            pboptions(use_lb = FALSE)
+            
             # lapply code block (j = internal standards)
-            results_list2 <- lapply(1:dim(rtRanges)[1], function(j) {  # for all target compounds
+            results_list2 <- pblapply(1:dim(rtRanges)[1], function(j) {  # for all target compounds
               compound_info <- dbData[j, ]  # id, name, mz, rt
               rt_list <- vector("list", length(sample_names))
               int_list <- vector("list", length(sample_names))
@@ -580,7 +569,7 @@ tardisPeaks <-
               }
               
               return(safe_bind(results_screening_row))
-            })
+            }, cl=cl)
             
             # Combine and standardize result
             results_screening <- safe_bind(results_list2)
@@ -596,7 +585,7 @@ tardisPeaks <-
             write.csv(avg_metrics_table,
                 file = paste0(output_directory, "qc_screening.csv")
             )
-        } else {
+        } else {  # non-screening mode
             ## Loop over the batches
             for (batchnr in 1:length(batch_positions)) {
                 dbData <- info_compounds # need to reset? better to keep updated from
@@ -638,6 +627,7 @@ tardisPeaks <-
                 } else {
                     spectra_QC <- data_QC@spectra
                 }
+                all_files <- unique(dataOrigin(spectra_QC))
                 ranges <- createRanges(data_QC, dbData, ppm, rtdev)
                 mzRanges <- ranges[[1]]
                 rtRanges <- ranges[[2]]
@@ -648,43 +638,57 @@ tardisPeaks <-
                     internal_standards_mz <-
                         mzRanges[which(dbData$ID %in% int_std_id), ]
                     dbData_std <- dbData[which(dbData$ID %in% int_std_id), ]
-                    sample_names <-
-                        lapply(data_QC@sampleData$spectraOrigin, basename)
-                    int_std_foundrt <- c()
-                    int_std <- c()
-                    # for (j in 1:dim(internal_standards_rt)[1]) {
-                    #     rt_list <- list()
-                    #     int_list <- list()
-                    #     x_list <- list()
-                    #     y_list <- list()
-                    #     for (i in 1:length(sample_names)) {
-                    #         sample_name <- unlist(sample_names[i])
-                    #         
-                    #         res <- smoothingSG(
-                    #           dbData_std$tr[j],
-                    #           unique(dataOrigin(spectra_QC))[i],
-                    #           spectra_QC,
-                    #           internal_standards_rt[j, ],
-                    #           internal_standards_mz[j, ],
-                    #           smoothing
-                    #         )
-                    #         rt <- res$rt
-                    #         int <- res$int
-                    #         border <- res$border
-                    #         
-                    #         int_std_foundrt <-
-                    #             cbind(int_std_foundrt, rt[border[3L]])
-                    #     }
-                    #     int_std <-
-                    #         rbind(int_std, int_std_foundrt)
-                    #     int_std_foundrt <- c()
-                    # }
+                    # sample_names <-
+                    #     lapply(data_QC@sampleData$spectraOrigin, basename)
+                    # int_std_foundrt <- c()
+                    # int_std <- c()
+                    
+                    sample_names_batch <-
+                      lapply(data_batch@sampleData$spectraOrigin, basename)  # length of sample_names_batch: number of total samples
+                    sample_names_QC <-
+                      lapply(data_QC@sampleData$spectraOrigin, basename)  # length of sample_names_QC: number of QC samples
+                    int_std_foundrt <- c(length(sample_names_batch))
+                    int_std <- c(dim(internal_standards_rt)[1] * length(sample_names_batch))
+                    
+                    # parallel
+                    clusterEvalQ(cl, {
+                      library(MsExperiment) #
+                      library(Spectra)
+                      library(signal) # sgolayfilt
+                      library(xcms) #  # rt alignment - not inside pblapply
+                      library(pracma)   # Required for: trapz() (AUC calculation)
+                      library(BiocParallel) #
+                      #library(tidyr)
+                      #library(writexl)
+                      #library(dplyr)   # Required for: group_by, summarise, etc.
+                      #library(S4Vectors)
+                      library(pbapply)
+                      library(parallel)
+                      library(MsBackendSql)      # <-- ADD (provides MsBackendOfflineSql)
+                      library(DBI)               # <-- ADD (SQLite connection dep)
+                      library(RSQLite)           # <-- ADD
+                      #library(diptest)
+                    })
+                    
+                    clusterExport(cl, varlist = c("smoothingSG",
+                                                  "filterSingle_extractEIC"), envir = environment()) # find the variables in this function & the global environment!
+                    
+                    clusterExport(cl, varlist = c("dbData_std", "all_files",
+                                                  "spectra_QC", "smoothing",
+                                                  "internal_standards_rt",
+                                                  "internal_standards_mz", "sample_names_QC"
+                                                  #"pval_cutoff", "smoothing_order"
+                    ), envir = environment()) # find the variables in this function & the global environment!
+                    # disable progress bar - defaults to parLapply!
+                    pboptions(type = "none")
+                    # load balancing x
+                    pboptions(use_lb = FALSE)
                     
                     # lapply code block
-                    results_list3 <- lapply(1:dim(internal_standards_rt)[1], function(j) {
-                      local_found_rt <- numeric(length(sample_names))
+                    results_list3 <- pblapply(1:dim(internal_standards_rt)[1], function(j) {
+                      local_found_rt <- numeric(length(sample_names_QC))
                       
-                      for (i in 1:length(sample_names)) {
+                      for (i in 1:length(sample_names_QC)) {
                         res <- smoothingSG(
                           dbData_std$tr[j],
                           unique(dataOrigin(spectra_QC))[i],
@@ -697,7 +701,7 @@ tardisPeaks <-
                       }
                       
                       return(local_found_rt)
-                    }) # results_list3: list of lists
+                    }, cl=cl) # results_list3: list of lists
                     int_std <- do.call(rbind, results_list3)
                     
                     param <-
@@ -716,8 +720,10 @@ tardisPeaks <-
                 data_QC <-
                     data_batch[which(sampleData(data_batch)$type == "QC")]
                 if (length(data_QC) != 0) {
-                    sample_names <-
-                        lapply(data_QC@sampleData$spectraOrigin, basename)
+                    # sample_names <-
+                    #     lapply(data_QC@sampleData$spectraOrigin, basename)
+                    sample_names_QC <-
+                      lapply(data_QC@sampleData$spectraOrigin, basename)
                     if (is.null(mass_range) == FALSE) {
                         spectra_QC <- data_QC@spectra |>
                             filterMzRange(mass_range) |>
@@ -725,61 +731,44 @@ tardisPeaks <-
                     } else {
                         spectra_QC <- data_QC@spectra
                     }
-                    # for (j in 1:dim(rtRanges)[1]) {
-                    #     rt_list <- list()
-                    #     int_list <- list()
-                    #     x_list <- list()
-                    #     y_list <- list()
-                    #     for (i in 1:length(sample_names)) {
-                    #         sample_name <- unlist(sample_names[i])
-                    #         
-                    #         res <- smoothingSG(
-                    #           dbData$tr[j],
-                    #           unique(dataOrigin(spectra_QC))[i],
-                    #           spectra_QC,
-                    #           rtRanges[j, ],
-                    #           mzRanges[j, ],
-                    #           smoothing
-                    #         )
-                    #         rt <- res$rt
-                    #         int <- res$int
-                    #         border <- res$border
-                    #         
-                    #         idx <- border[1L]:border[2L]
-                    #         x <- rt[idx]
-                    #         y <- int[idx]
-                    #         rt_list <- c(rt_list, list(rt))
-                    #         int_list <- c(int_list, list(int))
-                    #         x_list <- c(x_list, list(x))
-                    #         y_list <- c(y_list, list(y))
-                    #         
-                    #         results_QCs_batch <- checkValidPeak(x, y, rt, int, border, sample_name, dbData[j, ], results_QCs_batch)
-                    #         compound_info <- dbData[j, ]
-                    #     }
-                    #     if (plots_QC == TRUE) {
-                    #         plotQCs(
-                    #             compound_info,
-                    #             output_directory,
-                    #             rt_list,
-                    #             int_list,
-                    #             x_list,
-                    #             y_list,
-                    #             batchnr,
-                    #             sample_names
-                    #         )
-                    #     }
-                    # }
+                    all_files <- unique(dataOrigin(spectra_QC))
+                    
+                    length_results_QCs_batch <- dim(rtRanges)[1] * length(sample_names_QC)
+                    results_QCs_batch <-
+                      data.frame(
+                        Component = character(length_results_QCs_batch),
+                        Sample = character(length_results_QCs_batch),
+                        AUC = numeric(length_results_QCs_batch),
+                        SNR = numeric(length_results_QCs_batch),
+                        peak_cor = numeric(length_results_QCs_batch),
+                        foundRT = numeric(length_results_QCs_batch),
+                        pop = numeric(length_results_QCs_batch)
+                      )
+                    
+                    # parallel
+                    clusterExport(cl, varlist = c("smoothingSG",
+                                                  "filterSingle_extractEIC",
+                                                  "checkValidPeak",
+                                                  "plots_QC",
+                                                  "safe_bind"), envir = environment()) # find the variables in this function, not the global environment!
+                    
+                    clusterExport(cl, varlist = c("sample_names_QC", "dbData", "all_files",
+                                                  "spectra_QC", "smoothing",
+                                                  "rtRanges", "mzRanges", "plots_QC",
+                                                  "output_directory", "batchnr"
+                                                  #"pval_cutoff", "smoothing_order"
+                    ), envir = environment()) # find the variables in this function, not the global environment!
                     
                     # lapply code block
-                    results_list4 <- lapply(1:dim(rtRanges)[1], function(j) {
+                    results_list4 <- pblapply(1:dim(rtRanges)[1], function(j) {
                       compound_info <- dbData[j, ]
-                      rt_list <- vector("list", length(sample_names))
-                      int_list <- vector("list", length(sample_names))
-                      x_list <- vector("list", length(sample_names))
-                      y_list <- vector("list", length(sample_names))
-                      results_QCs_batch_row <- vector("list", length(sample_names))
+                      rt_list <- vector("list", length(sample_names_QC))
+                      int_list <- vector("list", length(sample_names_QC))
+                      x_list <- vector("list", length(sample_names_QC))
+                      y_list <- vector("list", length(sample_names_QC))
+                      results_QCs_batch_row <- vector("list", length(sample_names_QC))
                       
-                      for (i in 1:length(sample_names)) {
+                      for (i in 1:length(sample_names_QC)) {
                         res <- smoothingSG(
                           dbData$tr[j],
                           unique(dataOrigin(spectra_QC))[i],
@@ -803,7 +792,7 @@ tardisPeaks <-
                         results_QCs_batch_row[[i]] <- checkValidPeak(x,
                                                                      y,
                                                                      dbData[j, ],
-                                                                     sample_names[i],
+                                                                     sample_names_QC[i],
                                                                      int,
                                                                      rt,
                                                                      border)  # is a 1-row dataframe
@@ -819,11 +808,11 @@ tardisPeaks <-
                           x_list,
                           y_list,
                           batchnr,
-                          sample_names
+                          sample_names_QC
                         )
                       }
                       return(safe_bind(results_QCs_batch_row))
-                    })
+                    }, cl=cl)
                     
                     # Combine and standardize result
                     results_QCs_batch <- safe_bind(results_list4)
@@ -848,8 +837,10 @@ tardisPeaks <-
                 ## Next do the whole analysis for the samples in the same batch of the
                 ## QC's to find ALL the compounds at the corrected RT. (SAMPLES + QC)
                 ## Get sample data
-                sample_names <-
-                    lapply(data_batch@sampleData$spectraOrigin, basename)
+                # sample_names <-
+                #     lapply(data_batch@sampleData$spectraOrigin, basename)
+                sample_names_batch <-
+                  lapply(data_batch@sampleData$spectraOrigin, basename)
                 # Create ranges around new RT
                 ranges <- createRanges(data_batch, dbData, ppm, rtdev)
                 mzRanges <- ranges[[1]]
@@ -861,74 +852,48 @@ tardisPeaks <-
                 } else {
                     spectra <- data_batch@spectra
                 }
+                
+                length_results_samples <- dim(rtRanges)[1] * length(sample_names_batch)
+                results_samples <-
+                  data.frame(
+                    Component = character(length_results_samples),
+                    Sample = character(length_results_samples),
+                    AUC = numeric(length_results_samples),
+                    SNR = numeric(length_results_samples),
+                    peak_cor = numeric(length_results_samples),
+                    foundRT = numeric(length_results_samples),
+                    pop = numeric(length_results_samples)
+                  )
+                
+                all_files <- unique(dataOrigin(spectra))
 
-                # for (j in 1:dim(rtRanges)[1]) {
-                #     rt_list <- list()
-                #     int_list <- list()
-                #     x_list <- list()
-                #     y_list <- list()
-                #     for (i in 1:length(sample_names)) {
-                #         sample_name <- unlist(sample_names[i])
-                #         
-                #         res <- smoothingSG(
-                #           dbData$tr[j],
-                #           unique(dataOrigin(spectra))[i],
-                #           spectra,
-                #           rtRanges[j, ],
-                #           mzRanges[j, ],
-                #           smoothing
-                #         )
-                #         rt <- res$rt
-                #         int <- res$int
-                #         border <- res$border
-                #         
-                #         idx <- border[1L]:border[2L]
-                #         x <- rt[idx]
-                #         y <- int[idx]
-                #         rt_list <- c(rt_list, list(rt))
-                #         int_list <- c(int_list, list(int))
-                #         x_list <- c(x_list, list(x))
-                #         y_list <- c(y_list, list(y))
-                #         
-                #         results_samples <- checkValidPeak(x, y, rt, int, border, sample_name, dbData[j, ], results_samples)
-                #         compound_info <- dbData[j, ]
-                #     }
-                #     if (plots_samples == TRUE) {
-                #         plotSamples(
-                #             compound_info,
-                #             output_directory,
-                #             rt_list,
-                #             int_list,
-                #             x_list,
-                #             y_list,
-                #             batchnr,
-                #             sample_names
-                #         )
-                #     }
-                #     if (diagnostic_plots == TRUE) {
-                #         plotDiagnostic(
-                #             compound_info,
-                #             output_directory,
-                #             rt_list,
-                #             int_list,
-                #             x_list,
-                #             y_list,
-                #             batchnr,
-                #             sample_names
-                #         )
-                #     }
-                # }
+                # parallel
+                clusterExport(cl, varlist = c("smoothingSG",
+                                              "filterSingle_extractEIC",
+                                              "checkValidPeak",
+                                              "plots_samples",
+                                              "diagnostic_plots",
+                                              "safe_bind"), envir = environment()) # find the variables in this function, not the global environment!
+                
+                
+                clusterExport(cl, varlist = c("sample_names_batch", "dbData", "all_files",
+                                              "spectra", "smoothing",
+                                              "rtRanges", "mzRanges",
+                                              "plots_samples", "diagnostic_plots",
+                                              "output_directory", "batchnr"
+                                              #"pval_cutoff", "QC_pattern", "smoothing_order"
+                ), envir = environment()) # find the variables in this function, not the global environment!
                 
                 # lapply code block
-                results_list5 <- lapply(1:dim(rtRanges)[1], function(j){
+                results_list5 <- pblapply(1:dim(rtRanges)[1], function(j){
                   compound_info <- dbData[j, ]
-                  rt_list <- vector("list", length(sample_names))
-                  int_list <- vector("list", length(sample_names))
-                  x_list <- vector("list", length(sample_names))
-                  y_list <- vector("list", length(sample_names))
-                  results_samples_row <- vector("list", length(sample_names))
+                  rt_list <- vector("list", length(sample_names_batch))
+                  int_list <- vector("list", length(sample_names_batch))
+                  x_list <- vector("list", length(sample_names_batch))
+                  y_list <- vector("list", length(sample_names_batch))
+                  results_samples_row <- vector("list", length(sample_names_batch))
                   
-                  for (i in 1:length(sample_names)) {
+                  for (i in 1:length(sample_names_batch)) {
                     res <- smoothingSG(
                       dbData$tr[j],
                       unique(dataOrigin(spectra))[i],
@@ -952,7 +917,7 @@ tardisPeaks <-
                     results_samples_row[[i]] <- checkValidPeak(x,
                                                                y,
                                                                dbData[j, ],
-                                                               sample_names[i],
+                                                               sample_names_batch[i],
                                                                int,
                                                                rt,
                                                                border)
@@ -967,7 +932,7 @@ tardisPeaks <-
                       x_list,
                       y_list,
                       batchnr,
-                      sample_names
+                      sample_names_batch
                       #STD_pattern
                     )
                   }
@@ -980,12 +945,12 @@ tardisPeaks <-
                       x_list,
                       y_list,
                       batchnr,
-                      sample_names
+                      sample_names_batch
                       #QC_pattern
                     )
                   }
                   return (safe_bind(results_samples_row))
-                })
+                }, cl=cl)
                 
                 # Combine dataframes
                 results_samples <- safe_bind(results_list5)
@@ -1110,4 +1075,5 @@ tardisPeaks <-
             )
             return(list(auc_table, avg_metrics_table))
         }
+        stopCluster(cl)  # stop parallel processes
     }

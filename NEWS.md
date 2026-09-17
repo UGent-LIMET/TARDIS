@@ -20,6 +20,16 @@
 - Changed max_int_filter null value handling, to fix error "Error in if: missing value where TRUE/FALSE needed"
 - edited metrics tables generation code (to preserve clean layout for the output csv tables)
 
+## Change6
+- Parallelization by pblapply
+	- import additional packages
+	- introduce num_cores parameter
+	- setup cluster, clusterevalq (import packages to parallel workers), clusterexport (export functions/variables to parallel workers), stopcluster
+	- disable progress bar, no load balancing
+	- 5 pblapply loops (changed lapply loops to pblapply loops)
+	- added sample_names_QC, sample_names_batch variables (to mitigate clusterexport variable conflict)
+
+
 # TARDIS 1.0
 
 ## Changes in 1.1.0

@@ -330,26 +330,6 @@ tardisPeaks <-
         # cluster is stopped if there is an error
         on.exit(stopCluster(cl), add = TRUE)
         
-        results_samples <-
-            data.frame(
-                Component = character(0),
-                Sample = character(0),
-                AUC = numeric(0),
-                SNR = numeric(0),
-                peak_cor = numeric(0),
-                foundRT = numeric(0),
-                pop = numeric(0)
-            )
-        results_QCs <-
-            data.frame(
-                Component = character(0),
-                Sample = character(0),
-                AUC = numeric(0),
-                SNR = numeric(0),
-                peak_cor = numeric(0),
-                foundRT = numeric(0),
-                pop = numeric(0)
-            )
         if (is.null(file_path) == FALSE) {
             files <-
                 list.files(file_path, full.names = T, pattern = "mzML|mzXML")
@@ -374,16 +354,7 @@ tardisPeaks <-
         }
         info_compounds <- dbData
         if (screening_mode == TRUE) {
-            results_screening <-
-                data.frame(
-                    Component = character(0),
-                    Sample = character(0),
-                    AUC = numeric(0),
-                    SNR = numeric(0),
-                    peak_cor = numeric(0),
-                    foundRT = numeric(0),
-                    pop = numeric(0)
-                )
+            
             if (is.null(file_path) == FALSE) {
                 QC_files <-
                     files[grep(pattern = QC_pattern, files)]
@@ -418,9 +389,15 @@ tardisPeaks <-
                 ## Get QC sample names
                 sample_names <-
                     lapply(data_QC@sampleData$spectraOrigin, basename)
-                ## Initiate empty vectors
-                int_std_foundrt <- c()
-                int_std <- c()
+                
+                # reduce memory usage
+                global_rt_range1 <- range(internal_standards_rt, na.rm = TRUE) + c(-30, 30)
+                global_mz_range1 <- range(internal_standards_mz, na.rm = TRUE)
+                
+                spectra_QC <- spectra_QC |>
+                  filterDataOrigin(all_files) |>
+                  filterRt(global_rt_range1) |>
+                  filterMzRange(global_mz_range1)
                 
                 # parallel
                 clusterEvalQ(cl, {
@@ -494,6 +471,15 @@ tardisPeaks <-
             all_files <- unique(dataOrigin(spectra_QC))
             sample_names <-
                 lapply(data_QC@sampleData$spectraOrigin, basename)
+            
+            # reduce memory usage
+            global_rt_range2 <- range(rtRanges, na.rm = TRUE) + c(-30, 30)
+            global_mz_range2 <- range(mzRanges, na.rm = TRUE)
+            
+            spectra_QC <- spectra_QC |>
+              filterDataOrigin(all_files) |>
+              filterRt(global_rt_range2) |>
+              filterMzRange(global_mz_range2)
 
             # parallel
             clusterExport(cl, varlist = c("smoothingSG",
@@ -585,21 +571,13 @@ tardisPeaks <-
             write.csv(avg_metrics_table,
                 file = paste0(output_directory, "qc_screening.csv")
             )
+            stopCluster(cl)  # stop parallel processes
         } else {  # non-screening mode
             ## Loop over the batches
             for (batchnr in 1:length(batch_positions)) {
                 dbData <- info_compounds # need to reset? better to keep updated from
                 # last batch?
-                results_QCs_batch <-
-                    data.frame(
-                        Component = character(0),
-                        Sample = character(0),
-                        AUC = numeric(0),
-                        SNR = numeric(0),
-                        peak_cor = numeric(0),
-                        foundRT = numeric(0),
-                        pop = numeric(0)
-                    )
+                
                 if (is.null(file_path) == FALSE) {
                     files_batch <-
                         files[batch_positions[[batchnr]][1]:batch_positions[[batchnr]][2]]
@@ -649,6 +627,16 @@ tardisPeaks <-
                       lapply(data_QC@sampleData$spectraOrigin, basename)  # length of sample_names_QC: number of QC samples
                     int_std_foundrt <- c(length(sample_names_batch))
                     int_std <- c(dim(internal_standards_rt)[1] * length(sample_names_batch))
+                    
+                    
+                    # reduce memory usage
+                    global_rt_range3 <- range(internal_standards_rt, na.rm = TRUE) + c(-30, 30)
+                    global_mz_range3 <- range(internal_standards_mz, na.rm = TRUE)
+                    
+                    spectra_QC <- spectra_QC |>
+                      filterDataOrigin(all_files) |>
+                      filterRt(global_rt_range3) |>
+                      filterMzRange(global_mz_range3)
                     
                     # parallel
                     clusterEvalQ(cl, {
@@ -704,6 +692,9 @@ tardisPeaks <-
                     }, cl=cl) # results_list3: list of lists
                     int_std <- do.call(rbind, results_list3)
                     
+                    # doesn't seem to influence results that much...
+                    results_screening_row <- NULL  # need this line for error handling (the computer keeps looking for results_screening_row and doesnt find it)
+                    
                     param <-
                         PeakGroupsParam(
                             minFraction = 0.9,
@@ -744,6 +735,16 @@ tardisPeaks <-
                         foundRT = numeric(length_results_QCs_batch),
                         pop = numeric(length_results_QCs_batch)
                       )
+                    
+                    # reduce memory usage
+                    global_rt_range4 <- range(rtRanges, na.rm = TRUE) + c(-30, 30)
+                    global_mz_range4 <- range(mzRanges, na.rm = TRUE)
+                    
+                    spectra_QC <- spectra_QC |>
+                      filterDataOrigin(all_files) |>
+                      filterRt(global_rt_range4) |>
+                      filterMzRange(global_mz_range4)
+                    
                     
                     # parallel
                     clusterExport(cl, varlist = c("smoothingSG",
@@ -866,6 +867,17 @@ tardisPeaks <-
                   )
                 
                 all_files <- unique(dataOrigin(spectra))
+                
+                
+                # reduce memory usage
+                global_rt_range5 <- range(rtRanges, na.rm = TRUE) + c(-30, 30)
+                global_mz_range5 <- range(mzRanges, na.rm = TRUE)
+                
+                spectra <- spectra |>
+                  filterDataOrigin(all_files) |>
+                  filterRt(global_rt_range5) |>
+                  filterMzRange(global_mz_range5)
+                
 
                 # parallel
                 clusterExport(cl, varlist = c("smoothingSG",

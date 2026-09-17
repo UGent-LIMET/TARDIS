@@ -29,6 +29,13 @@
 	- 5 pblapply loops (changed lapply loops to pblapply loops)
 	- added sample_names_QC, sample_names_batch variables (to mitigate clusterexport variable conflict)
 
+## Change7
+- Memory optimization
+	- filter spectra before pblapply loops
+	- delete unnecessary memory
+	- allocate fixed sizes to objects when initializing
+- Added stopCluster() in screening mode (invalid connections error; doesn't help)
+
 
 # TARDIS 1.0
 

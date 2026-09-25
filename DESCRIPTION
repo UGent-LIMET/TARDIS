@@ -16,10 +16,10 @@ Authors@R:
 	   role = "ctb",
 	   comment = c(ORCID = "0000-0001-9875-385X")),
      person(given = "Eewon", family = "Tai",
-	    email = "Eewon.Tai@UGent.be",
-	    role = "ctb",
-	    comment = c(ORCID = "0009-0009-8829-0308"))
-	   )
+	   email = "Eewon.Tai@UGent.be",
+	   role = "ctb",
+	   comment = c(ORCID = "0009-0009-8829-0308"))
+     )
 Description: TARDIS was created to extract targeted chromatographic
     peak data from LC-MS experiments. It makes use of the 'Spectra'
     package in order to be future-proof and exist within the

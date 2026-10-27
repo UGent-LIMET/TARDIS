@@ -7,7 +7,7 @@
 createRanges(msData, dbData, ppm, rtdev)
 }
 \arguments{
-\item{msData}{\code{\link[=MsExperiment]{MsExperiment()}} object}
+\item{msData}{\code{\link[MsExperiment:MsExperiment]{MsExperiment()}} object}
 
 \item{dbData}{target database, output of \code{\link[=createTargetList]{createTargetList()}}}
 

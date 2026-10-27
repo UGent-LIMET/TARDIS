@@ -1,50 +1,108 @@
-#' filter Spectra to single peak in single sample
+#' @title Extract multiple EICs
 #'
-#' @param spectra a `Spectra` object
-#' @param dataOrigin file that contains the spectra
-#' @param rt_range `numeric(2)` rt range of compound
-#' @param mz_range `numeric(2)` mz range of compound
-#' @returns returns filtered `Spectra` object
-filterSingle <- function(spectra, dataOrigin, rt_range, mz_range) {
-    spectra <- spectra |>
-        filterDataOrigin(dataOrigin) |>
-        filterRt(rt_range) |>
-        filterMzRange(mz_range)
-    spectra
-}
-
-#' Sum Intensities of Spectra
+#' @param object An `MsExperiment` object.
+#' @param mzRanges A two column matrix with minimum and maximum m/z values.
+#' @param rtRanges A two column matrix with minimum and maximum retention
+#'     times.
+#' @param massRange Optional mass window used to remove scans without peaks in
+#'     that window. One additional chromatogram is extracted as a shared scan
+#'     mask, avoiding a separate pass over all mzML peak data.
+#'
+#' @return A list containing the extracted `MChromatograms`, an optional
+#'     mass-range scan mask for each sample, and the number of samples.
 #' @noRd
-.sum_intensities <- function(x, ...) {
-    if (nrow(x)) {
-        cbind(
-            mz = NA_real_,
-            intensity = sum(x[, "intensity"], na.rm = TRUE)
-        )
+.extractChromatograms <- function(object, mzRanges, rtRanges,
+                                  massRange = NULL) {
+    if (is.null(dim(mzRanges)) && length(mzRanges) == 2) {
+        mzRanges <- matrix(mzRanges, nrow = 1)
     } else {
-        cbind(mz = NA_real_, intensity = NA_real_)
+        mzRanges <- as.matrix(mzRanges)
     }
+    if (is.null(dim(rtRanges)) && length(rtRanges) == 2) {
+        rtRanges <- matrix(rtRanges, nrow = 1)
+    } else {
+        rtRanges <- as.matrix(rtRanges)
+    }
+    if (ncol(mzRanges) != 2 || ncol(rtRanges) != 2 ||
+            nrow(mzRanges) != nrow(rtRanges)) {
+        stop("'mzRanges' and 'rtRanges' must be equally sized two-column matrices.")
+    }
+
+    targetCount <- nrow(mzRanges)
+    if (!is.null(massRange)) {
+        mzRanges <- rbind(mzRanges, massRange)
+        rtRanges <- rbind(rtRanges, range(rtRanges))
+    }
+
+    chromatograms <- xcms::chromatogram(
+        object,
+        mz = mzRanges,
+        rt = rtRanges,
+        return.type = "MChromatograms",
+        BPPARAM = BiocParallel::SerialParam()
+    )
+    sampleCount <- ncol(chromatograms)
+    massRangeEics <- NULL
+    if (!is.null(massRange)) {
+        massRangeEics <- lapply(
+            seq_len(sampleCount),
+            function(sample) {
+                .mChromatogramEic(
+                    chromatograms,
+                    target = targetCount + 1,
+                    sample = sample
+                )
+            }
+        )
+    }
+    list(
+        data = chromatograms,
+        massRangeEics = massRangeEics,
+        sampleCount = sampleCount
+    )
 }
 
-#' @title Function to extract EIC from Spectra object
+#' @title Convert one MChromatogram entry to a TARDIS EIC matrix
 #'
-#' @param spectra a `Spectra` object.
+#' @param chromatograms An `MChromatograms` object.
+#' @param target Integer target index.
+#' @param sample Integer sample index.
 #'
-#' @return two column matrix with rt and int
-#'
-#' @author Pablo Vangeenderhuysen
-#'
-#'
-#' @export
-extract_eic <- function(spectra) {
-    sfs_agg <-
-        addProcessing(spectra, .sum_intensities)
-    eic <-
-        cbind(
-            rtime(sfs_agg),
-            unlist(intensity(sfs_agg), use.names = FALSE)
-        )
+#' @return A two-column matrix with columns `rt` and `int`.
+#' @noRd
+.mChromatogramEic <- function(chromatograms, target, sample) {
+    currentChromatogram <- methods::slot(chromatograms, ".Data")[[
+        target,
+        sample
+    ]]
+    eic <- cbind(
+        rt = ProtGenerics::rtime(currentChromatogram),
+        int = ProtGenerics::intensity(currentChromatogram)
+    )
     rownames(eic) <- NULL
-    colnames(eic) <- c("rt", "int")
+    eic
+}
+
+#' @title Retrieve one masked EIC from the MChromatograms result
+#'
+#' @param chromatograms The result of `.extractChromatograms()`.
+#' @param target Integer target index.
+#' @param sample Integer sample index.
+#'
+#' @return A two-column matrix with columns `rt` and `int`.
+#' @noRd
+.chromatogramEic <- function(chromatograms, target, sample) {
+    eic <- .mChromatogramEic(
+        chromatograms$data,
+        target = target,
+        sample = sample
+    )
+    if (!is.null(chromatograms$massRangeEics)) {
+        massRangeEic <- chromatograms$massRangeEics[[sample]]
+        retainedRtime <- massRangeEic[, "rt"][
+            !is.na(massRangeEic[, "int"])
+        ]
+        eic <- eic[eic[, "rt"] %in% retainedRtime, , drop = FALSE]
+    }
     eic
 }

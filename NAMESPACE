@@ -3,7 +3,6 @@
 export(checkScans)
 export(createRanges)
 export(createTargetList)
-export(extract_eic)
 export(find_peak_points)
 export(integrateSinglePeak)
 export(plotDiagnostic)
@@ -20,32 +19,39 @@ importFrom(BiocParallel,SnowParam)
 importFrom(ProtGenerics,dataOrigin)
 importFrom(RColorBrewer,brewer.pal)
 importFrom(S4Vectors,DataFrame)
-importFrom(Spectra,MsBackendMzR)
-importFrom(Spectra,Spectra)
-importFrom(Spectra,addProcessing)
-importFrom(Spectra,dataOrigin)
-importFrom(Spectra,filterDataOrigin)
-importFrom(Spectra,filterEmptySpectra)
-importFrom(Spectra,filterMzRange)
-importFrom(Spectra,filterPolarity)
-importFrom(Spectra,filterRt)
-importFrom(Spectra,isEmpty)
-importFrom(dplyr,first)
-importFrom(dplyr,group_by)
-importFrom(dplyr,select)
-importFrom(dplyr,summarise)
-importFrom(dplyr,summarise_at)
+importFrom(Spectra,
+  MsBackendMzR,
+  Spectra,
+  addProcessing,
+  dataOrigin,
+  filterDataOrigin,
+  filterMzRange,
+  filterPolarity,
+  filterRt,
+  isEmpty
+)
+importFrom(dplyr,
+  first,
+  group_by,
+  select,
+  summarise,
+  summarise_at
+)
 importFrom(magrittr,"%>%")
 importFrom(pracma,trapz)
 importFrom(readxl,read_xlsx)
 importFrom(signal,sgolayfilt)
-importFrom(stringr,str_ends)
-importFrom(stringr,str_replace_all)
+importFrom(stringr,
+  str_ends,
+  str_replace_all
+)
 importFrom(tidyr,spread)
 importFrom(writexl,write_xlsx)
-importFrom(xcms,PeakGroupsParam)
-importFrom(xcms,adjustRtime)
-importFrom(xcms,applyAdjustedRtime)
-importFrom(xcms,imputeLinInterpol)
-importFrom(xcms,intensity)
-importFrom(xcms,rtime)
+importFrom(xcms,
+  PeakGroupsParam,
+  adjustRtime,
+  applyAdjustedRtime,
+  imputeLinInterpol,
+  intensity,
+  rtime
+)

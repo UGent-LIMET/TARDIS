@@ -73,7 +73,7 @@ retention time alignment}
 \item{screening_mode}{\code{logical(1)} Run the algorithm over 5 QCs to quickly
 check retention time shifts}
 
-\item{smoothing}{\code{logical(1)} Smooth the peaks with \code{\link[=sgolayfilt]{sgolayfilt()}}}
+\item{smoothing}{\code{logical(1)} Smooth the peaks with \code{\link[signal:sgolayfilt]{sgolayfilt()}}}
 
 \item{max_int_filter}{\code{numeric(1)} Disregard peaks with a max. int. lower
 than this value}

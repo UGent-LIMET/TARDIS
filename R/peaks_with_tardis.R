@@ -41,8 +41,6 @@
 #'
 #' @import MsExperiment
 #' @importFrom Spectra MsBackendMzR
-#' @importFrom Spectra filterMzRange
-#' @importFrom Spectra filterEmptySpectra
 #' @importFrom Spectra filterDataOrigin
 #' @importFrom Spectra filterRt
 #' @importFrom Spectra filterPolarity
@@ -98,26 +96,7 @@ tardisPeaks <-
            screening_mode = FALSE,
            smoothing = TRUE,
            max_int_filter = NULL) {
-    results_samples <-
-      data.frame(
-        Component = character(0),
-        Sample = character(0),
-        AUC = numeric(0),
-        SNR = numeric(0),
-        peak_cor = numeric(0),
-        foundRT = numeric(0),
-        pop = numeric(0)
-      )
-    results_QCs <-
-      data.frame(
-        Component = character(0),
-        Sample = character(0),
-        AUC = numeric(0),
-        SNR = numeric(0),
-        peak_cor = numeric(0),
-        foundRT = numeric(0),
-        pop = numeric(0)
-      )
+    results_sample_batches <- vector("list", length(batch_positions))
     if (is.null(file_path) == FALSE) {
       files <-
         list.files(file_path, full.names = T, pattern = "mzML|mzXML")
@@ -142,16 +121,6 @@ tardisPeaks <-
     }
     info_compounds <- dbData
     if (screening_mode == TRUE) {
-      results_screening <-
-        data.frame(
-          Component = character(0),
-          Sample = character(0),
-          AUC = numeric(0),
-          SNR = numeric(0),
-          peak_cor = numeric(0),
-          foundRT = numeric(0),
-          pop = numeric(0)
-        )
       if (is.null(file_path) == FALSE) {
         QC_files <-
           files[grep(pattern = QC_pattern, files)]
@@ -190,12 +159,6 @@ tardisPeaks <-
       } else {
         data_QC <- lcmsData[which(sampleData(lcmsData)$type == QC_pattern)]
       }
-      if (is.null(mass_range) == FALSE) {
-        data_QC <- filterSpectra(data_QC, filterMzRange, mz = mass_range) |>
-          filterSpectra(filterEmptySpectra)
-      } else {
-        data_QC <- data_QC
-      }
       spectra_QC <- data_QC@spectra
       checkScans(spectra_QC)
       data_QC@spectra <- spectra_QC
@@ -215,9 +178,18 @@ tardisPeaks <-
         ## Get QC sample names
         sample_names <-
           lapply(data_QC@sampleData$spectraOrigin, basename)
-        ## Initiate empty vectors
-        int_std_foundrt <- c()
-        int_std <- c()
+        ## Pre-allocate internal-standard RTs (targets x QC samples)
+        int_std <- matrix(
+          NA_real_,
+          nrow = nrow(internal_standards_rt),
+          ncol = length(sample_names)
+        )
+        intStdChromatograms <- .extractChromatograms(
+          data_QC,
+          internal_standards_mz,
+          internal_standards_rt,
+          massRange = mass_range
+        )
         ## Retrieve foundRT of internal standards in QC's,
         ## loop over all samples and all internal standards
         for (j in 1:dim(internal_standards_rt)[1]) {
@@ -227,13 +199,7 @@ tardisPeaks <-
           y_list <- list()
           for (i in 1:length(sample_names)) {
             sample_name <- unlist(sample_names[i])
-            filtered_spectra <- TARDIS:::filterSingle(
-              spectra_QC,
-              unique(dataOrigin(spectra_QC))[i],
-              internal_standards_rt[j, ],
-              internal_standards_mz[j, ]
-            )
-            eic <- extract_eic(filtered_spectra)
+            eic <- .chromatogramEic(intStdChromatograms, j, i)
             rt <- eic[, 1L]
             int <- eic[, 2L]
             # NA intensities are set to zero --> should change this so only NA's
@@ -260,8 +226,8 @@ tardisPeaks <-
               
               long_na_runs <- which(r$values & r$lengths > 5)
               
-              for (i in long_na_runs) {
-                int[starts[i]:ends[i]] <- 0
+              for (run_idx in long_na_runs) {
+                int[starts[run_idx]:ends[run_idx]] <- 0
               }
               
               # recompute NA mask AFTER modification
@@ -314,15 +280,8 @@ tardisPeaks <-
               )
             
             # Save found RT for internal standard target
-            int_std_foundrt <-
-              cbind(int_std_foundrt, rt[border[3L]]) # this will finally contain
-            # all found rts for the different internal standards in this sample
+            int_std[j, i] <- rt[border[3L]]
           }
-          
-          ## this will contain all the found rts in all samples
-          int_std <-
-            rbind(int_std, int_std_foundrt)
-          int_std_foundrt <- c()
         }
         ## Define parameters for retention time adjustment, based on the QC's
         ## and the internal standards
@@ -336,25 +295,28 @@ tardisPeaks <-
         data_QC <- applyAdjustedRtime(data_QC)
       }
       # Find all targets in x QC's
-      
-      spectra_QC <- data_QC@spectra
+
       sample_names <-
         lapply(data_QC@sampleData$spectraOrigin, basename)
-      
+      targetChromatograms <- .extractChromatograms(
+        data_QC,
+        mzRanges,
+        rtRanges,
+        massRange = mass_range
+      )
+      results_screening <- vector(
+        "list", nrow(rtRanges) * length(sample_names)
+      )
+      results_screening_idx <- 0L
+
       for (j in 1:dim(rtRanges)[1]) {
-        rt_list <- list()
-        int_list <- list()
-        x_list <- list()
-        y_list <- list()
+        rt_list <- vector("list", length(sample_names))
+        int_list <- vector("list", length(sample_names))
+        x_list <- vector("list", length(sample_names))
+        y_list <- vector("list", length(sample_names))
         for (i in 1:length(sample_names)) {
           sample_name <- unlist(sample_names[i])
-          filtered_spectra <- filterSingle(
-            spectra_QC,
-            unique(dataOrigin(spectra_QC))[i],
-            rtRanges[j, ],
-            mzRanges[j, ]
-          )
-          eic <- extract_eic(filtered_spectra)
+          eic <- .chromatogramEic(targetChromatograms, j, i)
           rt <- eic[, 1L]
           int <- eic[, 2L]
           length_error <- length(int)
@@ -378,8 +340,8 @@ tardisPeaks <-
             
             long_na_runs <- which(r$values & r$lengths > 5)
             
-            for (i in long_na_runs) {
-              int[starts[i]:ends[i]] <- 0
+            for (run_idx in long_na_runs) {
+              int[starts[run_idx]:ends[run_idx]] <- 0
             }
             
             # recompute NA mask AFTER modification
@@ -429,19 +391,18 @@ tardisPeaks <-
           idx <- border[1L]:border[2L]
           x <- rt[idx]
           y <- int[idx]
-          rt_list <- c(rt_list, list(rt))
-          int_list <- c(int_list, list(int))
-          x_list <- c(x_list, list(x))
-          y_list <- c(y_list, list(y))
+          rt_list[[i]] <- rt
+          int_list[[i]] <- int
+          x_list[[i]] <- x
+          y_list[[i]] <- y
+          results_screening_idx <- results_screening_idx + 1L
           ## Check if there are at least two unique values for the component
           if (length(unique(y)) > 1) {
             auc <- trapz(x, y)
             pop <- length(x)
             qscore <- qscoreCalculator(x, y)
             compound_info <- dbData[j, ]
-            results_screening <- rbind(
-              results_screening,
-              data.frame(
+            results_screening[[results_screening_idx]] <- data.frame(
                 Component = compound_info$ID,
                 Sample = sample_name,
                 AUC = auc,
@@ -451,14 +412,11 @@ tardisPeaks <-
                 foundRT = rt[border[3L]],
                 pop = pop,
                 compound_info
-              )
             )
           } else {
             compound_info <- dbData[j, ]
             # Append results to the data frame with compound information
-            results_screening <- rbind(
-              results_screening,
-              data.frame(
+            results_screening[[results_screening_idx]] <- data.frame(
                 Component = compound_info$ID,
                 Sample = sample_name,
                 AUC = NA,
@@ -468,7 +426,6 @@ tardisPeaks <-
                 foundRT = NA,
                 pop = NA,
                 compound_info
-              )
             )
           }
         }
@@ -487,6 +444,7 @@ tardisPeaks <-
           )
         }
       }
+      results_screening <- do.call(rbind, results_screening)
       avg_metrics_table <- results_screening %>%
         group_by(Component) %>%
         summarise_at(vars(-Sample), list(~ if (is.numeric(.)) {
@@ -502,16 +460,6 @@ tardisPeaks <-
       for (batchnr in 1:length(batch_positions)) {
         dbData <- info_compounds # need to reset? better to keep updated from
         # last batch?
-        results_QCs_batch <-
-          data.frame(
-            Component = character(0),
-            Sample = character(0),
-            AUC = numeric(0),
-            SNR = numeric(0),
-            peak_cor = numeric(0),
-            foundRT = numeric(0),
-            pop = numeric(0)
-          )
         if (is.null(file_path) == FALSE) {
           files_batch <-
             files[batch_positions[[batchnr]][1]:batch_positions[[batchnr]][2]]
@@ -554,25 +502,12 @@ tardisPeaks <-
         } else {
           data_batch <- lcmsData[batch_positions[[batchnr]][1]:batch_positions[[batchnr]][2]]
         }
-        if (is.null(mass_range) == FALSE) {
-          data_batch <- filterSpectra(data_batch, filterMzRange, mz = mass_range) |>
-            filterSpectra(filterEmptySpectra)
-        } else {
-          data_batch <- data_batch
-        }
         spectra_batch <- data_batch@spectra
         checkScans(spectra_batch)
         data_batch@spectra <- spectra_batch
         
         data_QC <-
           data_batch[which(sampleData(data_batch)$type == "QC")]
-        if (is.null(mass_range == FALSE)) {
-          spectra_QC <- data_QC@spectra |>
-            filterMzRange(mass_range) |>
-            filterEmptySpectra()
-        } else {
-          spectra_QC <- data_QC@spectra
-        }
         ranges <- createRanges(data_QC, dbData, ppm, rtdev)
         mzRanges <- ranges[[1]]
         rtRanges <- ranges[[2]]
@@ -585,8 +520,17 @@ tardisPeaks <-
           dbData_std <- dbData[which(dbData$ID %in% int_std_id), ]
           sample_names <-
             lapply(data_QC@sampleData$spectraOrigin, basename)
-          int_std_foundrt <- c()
-          int_std <- c()
+          int_std <- matrix(
+            NA_real_,
+            nrow = nrow(internal_standards_rt),
+            ncol = length(sample_names)
+          )
+          intStdChromatograms <- .extractChromatograms(
+            data_QC,
+            internal_standards_mz,
+            internal_standards_rt,
+            massRange = mass_range
+          )
           for (j in 1:dim(internal_standards_rt)[1]) {
             rt_list <- list()
             int_list <- list()
@@ -594,13 +538,7 @@ tardisPeaks <-
             y_list <- list()
             for (i in 1:length(sample_names)) {
               sample_name <- unlist(sample_names[i])
-              spectra_filtered <- filterSingle(
-                spectra_QC,
-                unique(dataOrigin(spectra_QC))[i],
-                internal_standards_rt[j, ],
-                internal_standards_mz[j, ]
-              )
-              eic <- extract_eic(spectra_filtered)
+              eic <- .chromatogramEic(intStdChromatograms, j, i)
               rt <- eic[, 1L]
               int <- eic[, 2L]
               length_error <- length(int)
@@ -624,8 +562,8 @@ tardisPeaks <-
                 
                 long_na_runs <- which(r$values & r$lengths > 5)
                 
-                for (i in long_na_runs) {
-                  int[starts[i]:ends[i]] <- 0
+                for (run_idx in long_na_runs) {
+                  int[starts[run_idx]:ends[run_idx]] <- 0
                 }
                 
                 # recompute NA mask AFTER modification
@@ -674,12 +612,8 @@ tardisPeaks <-
                 find_peak_points(rt, smoothed, dbData_std$tr[j],
                                  .check = FALSE
                 )
-              int_std_foundrt <-
-                cbind(int_std_foundrt, rt[border[3L]])
+              int_std[j, i] <- rt[border[3L]]
             }
-            int_std <-
-              rbind(int_std, int_std_foundrt)
-            int_std_foundrt <- c()
           }
           param <-
             PeakGroupsParam(
@@ -699,27 +633,24 @@ tardisPeaks <-
         if (length(data_QC) != 0) {
           sample_names <-
             lapply(data_QC@sampleData$spectraOrigin, basename)
-          if (is.null(mass_range) == FALSE) {
-            spectra_QC <- data_QC@spectra |>
-              filterMzRange(mass_range) |>
-              filterEmptySpectra()
-          } else {
-            spectra_QC <- data_QC@spectra
-          }
+          targetChromatograms <- .extractChromatograms(
+            data_QC,
+            mzRanges,
+            rtRanges,
+            massRange = mass_range
+          )
+          results_QCs_batch_rows <- vector(
+            "list", nrow(rtRanges) * length(sample_names)
+          )
+          results_QCs_batch_idx <- 0L
           for (j in 1:dim(rtRanges)[1]) {
-            rt_list <- list()
-            int_list <- list()
-            x_list <- list()
-            y_list <- list()
+            rt_list <- vector("list", length(sample_names))
+            int_list <- vector("list", length(sample_names))
+            x_list <- vector("list", length(sample_names))
+            y_list <- vector("list", length(sample_names))
             for (i in 1:length(sample_names)) {
               sample_name <- unlist(sample_names[i])
-              filtered_spectra <- filterSingle(
-                spectra_QC,
-                unique(dataOrigin(spectra_QC))[i],
-                rtRanges[j, ],
-                mzRanges[j, ]
-              )
-              eic <- extract_eic(filtered_spectra)
+              eic <- .chromatogramEic(targetChromatograms, j, i)
               rt <- eic[, 1L]
               int <- eic[, 2L]
               length_error <- length(int)
@@ -743,8 +674,8 @@ tardisPeaks <-
                 
                 long_na_runs <- which(r$values & r$lengths > 5)
                 
-                for (i in long_na_runs) {
-                  int[starts[i]:ends[i]] <- 0
+                for (run_idx in long_na_runs) {
+                  int[starts[run_idx]:ends[run_idx]] <- 0
                 }
                 
                 # recompute NA mask AFTER modification
@@ -795,18 +726,17 @@ tardisPeaks <-
               idx <- border[1L]:border[2L]
               x <- rt[idx]
               y <- int[idx]
-              rt_list <- c(rt_list, list(rt))
-              int_list <- c(int_list, list(int))
-              x_list <- c(x_list, list(x))
-              y_list <- c(y_list, list(y))
+              rt_list[[i]] <- rt
+              int_list[[i]] <- int
+              x_list[[i]] <- x
+              y_list[[i]] <- y
+              results_QCs_batch_idx <- results_QCs_batch_idx + 1L
               if (length(unique(y)) > 1) {
                 auc <- trapz(x, y)
                 pop <- length(x)
                 qscore <- qscoreCalculator(x, y)
                 compound_info <- dbData[j, ]
-                results_QCs_batch <- rbind(
-                  results_QCs_batch,
-                  data.frame(
+                results_QCs_batch_rows[[results_QCs_batch_idx]] <- data.frame(
                     Component = compound_info$ID,
                     Sample = sample_name,
                     AUC = auc,
@@ -816,13 +746,10 @@ tardisPeaks <-
                     foundRT = rt[border[3L]],
                     pop = pop,
                     compound_info
-                  )
                 )
               } else {
                 compound_info <- dbData[j, ]
-                results_QCs_batch <- rbind(
-                  results_QCs_batch,
-                  data.frame(
+                results_QCs_batch_rows[[results_QCs_batch_idx]] <- data.frame(
                     Component = compound_info$ID,
                     Sample = sample_name,
                     AUC = NA,
@@ -832,7 +759,6 @@ tardisPeaks <-
                     foundRT = NA,
                     pop = NA,
                     compound_info
-                  )
                 )
               }
             }
@@ -849,7 +775,7 @@ tardisPeaks <-
               )
             }
           }
-          results_QCs <- rbind(results_QCs, results_QCs_batch)
+          results_QCs_batch <- do.call(rbind, results_QCs_batch_rows)
           ## Replace rtmed with average foundRT from previous results
           new_rt_avg <- results_QCs_batch %>%
             group_by(ID) %>%
@@ -873,28 +799,25 @@ tardisPeaks <-
         ranges <- createRanges(data_batch, dbData, ppm, rtdev)
         mzRanges <- ranges[[1]]
         rtRanges <- ranges[[2]]
-        if (is.null(mass_range) == FALSE) {
-          spectra <- data_batch@spectra |>
-            filterMzRange(mz = mass_range) |>
-            filterEmptySpectra()
-        } else {
-          spectra <- data_batch@spectra
-        }
-        
+        targetChromatograms <- .extractChromatograms(
+          data_batch,
+          mzRanges,
+          rtRanges,
+          massRange = mass_range
+        )
+        results_samples_batch_rows <- vector(
+          "list", nrow(rtRanges) * length(sample_names)
+        )
+        results_samples_batch_idx <- 0L
+
         for (j in 1:dim(rtRanges)[1]) {
-          rt_list <- list()
-          int_list <- list()
-          x_list <- list()
-          y_list <- list()
+          rt_list <- vector("list", length(sample_names))
+          int_list <- vector("list", length(sample_names))
+          x_list <- vector("list", length(sample_names))
+          y_list <- vector("list", length(sample_names))
           for (i in 1:length(sample_names)) {
             sample_name <- unlist(sample_names[i])
-            spectra_filtered <- filterSingle(
-              spectra,
-              unique(dataOrigin(spectra))[i],
-              rtRanges[j, ],
-              mzRanges[j, ]
-            )
-            eic <- extract_eic(spectra_filtered)
+            eic <- .chromatogramEic(targetChromatograms, j, i)
             eic <- eic[which(duplicated(eic[, 1]) == FALSE), ] # why is this here?
             rt <- eic[, 1L]
             int <- eic[, 2L]
@@ -919,8 +842,8 @@ tardisPeaks <-
               
               long_na_runs <- which(r$values & r$lengths > 5)
               
-              for (i in long_na_runs) {
-                int[starts[i]:ends[i]] <- 0
+              for (run_idx in long_na_runs) {
+                int[starts[run_idx]:ends[run_idx]] <- 0
               }
               
               # recompute NA mask AFTER modification
@@ -971,19 +894,18 @@ tardisPeaks <-
             idx <- border[1L]:border[2L]
             x <- rt[idx]
             y <- int[idx]
-            rt_list <- c(rt_list, list(rt))
-            int_list <- c(int_list, list(int))
-            x_list <- c(x_list, list(x))
-            y_list <- c(y_list, list(y))
+            rt_list[[i]] <- rt
+            int_list[[i]] <- int
+            x_list[[i]] <- x
+            y_list[[i]] <- y
+            results_samples_batch_idx <- results_samples_batch_idx + 1L
             # Check if there are at least two unique values for the component
             if (length(unique(y)) > 1) {
               auc <- trapz(x, y)
               pop <- length(x)
               qscore <- qscoreCalculator(x, y)
               compound_info <- dbData[j, ]
-              results_samples <- rbind(
-                results_samples,
-                data.frame(
+              results_samples_batch_rows[[results_samples_batch_idx]] <- data.frame(
                   Component = compound_info$ID,
                   Sample = sample_name,
                   AUC = auc,
@@ -993,13 +915,10 @@ tardisPeaks <-
                   foundRT = rt[border[3L]],
                   pop = pop,
                   compound_info
-                )
               )
             } else {
               compound_info <- dbData[j, ]
-              results_samples <- rbind(
-                results_samples,
-                data.frame(
+              results_samples_batch_rows[[results_samples_batch_idx]] <- data.frame(
                   Component = compound_info$ID,
                   Sample = sample_name,
                   AUC = NA,
@@ -1009,7 +928,6 @@ tardisPeaks <-
                   foundRT = NA,
                   pop = NA,
                   compound_info
-                )
               )
             }
           }
@@ -1038,8 +956,11 @@ tardisPeaks <-
             )
           }
         }
+        results_sample_batches[[batchnr]] <- do.call(
+          rbind, results_samples_batch_rows
+        )
       }
-      results <- results_samples
+      results <- do.call(rbind, results_sample_batches)
       
       if (is.null(max_int_filter) == FALSE && max_int_filter != 0) {
         results <- results[which(results$MaxInt >= max_int_filter), ]

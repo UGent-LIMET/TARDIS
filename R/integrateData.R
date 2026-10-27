@@ -1,3 +1,17 @@
+#' Sum the intensities within one spectrum for EIC extraction
+#'
+#' @noRd
+.sumIntensities <- function(x, ...) {
+    if (nrow(x)) {
+        cbind(
+            mz = NA_real_,
+            intensity = sum(x[, "intensity"], na.rm = TRUE)
+        )
+    } else {
+        cbind(mz = NA_real_, intensity = NA_real_)
+    }
+}
+
 #' Integrate single chromatographic peak in single file
 #'
 #' @param file_path `character(1)` path to .mzML or .mzXML file
@@ -10,7 +24,6 @@
 #' @import MsExperiment
 #' @importFrom Spectra MsBackendMzR
 #' @importFrom Spectra filterMzRange
-#' @importFrom Spectra filterEmptySpectra
 #' @importFrom Spectra filterDataOrigin
 #' @importFrom Spectra filterRt
 #' @importFrom Spectra dataOrigin
@@ -41,7 +54,7 @@ integrateSinglePeak <- function(file_path, rt, mz, ppm, rtdev, smoothing) {
     spectra <-
         filterMzRange(spectra, mzRange)
     sfs_agg <-
-        addProcessing(spectra, .sum_intensities)
+        addProcessing(spectra, .sumIntensities)
     eic <-
         cbind(
             rtime(sfs_agg),

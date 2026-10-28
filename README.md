@@ -1,7 +1,3 @@
-<!-- badges: start -->
-[![R-CMD-check](https://github.com/pablovgd/TARDIS/actions/workflows/R-CMD-check.yaml/badge.svg?branch=devel)](https://github.com/pablovgd/TARDIS/actions/workflows/R-CMD-check.yaml)
-<!-- badges: end -->
-
 # TARDIS <img src="man/figures/tardis.png" width="150" height="150" align = right />        
 
 R package for *TArgeted Raw Data Integration In Spectrometry*
@@ -62,7 +58,7 @@ library(TARDIS)
 
 **Read the vignettes** for a tutorial on how to use `TARDIS`
 
-Available online: https://pablovgd.github.io/TARDIS/
+Available online: https://ugent-limet.github.io/TARDIS/index.html
 
 Or, if you installed with `build_vignettes = TRUE`
 
@@ -89,5 +85,3 @@ runTardis()
 `TARDIS` is licensed under the [GPLv3](http://choosealicense.com/licenses/gpl-3.0/)
 
 As a summary, the GPLv3 license requires attribution, inclusion of copyright and license information, disclosure of source code and changes. Derivative work must be available under the same terms.
-
-B) Pablo Vangeenderhuysen (2024)

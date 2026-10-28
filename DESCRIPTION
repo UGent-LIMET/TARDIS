@@ -61,5 +61,5 @@ biocViews: Infrastructure, Software, Metabolomics, MassSpectrometry
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 VignetteBuilder: knitr
-URL: https://pablovgd.github.io/TARDIS/
+URL: https://ugent-limet.github.io/TARDIS/index.html
 Config/roxygen2/version: 8.1.0

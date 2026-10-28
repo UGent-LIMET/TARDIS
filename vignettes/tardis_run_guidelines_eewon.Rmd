@@ -4,6 +4,15 @@ author: Eewon Tai <Eewon.Tai@UGent.be>
 output: html_notebook
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  eval = FALSE, # <--- This stops R from executing the code chunks
+  echo = TRUE,   # <--- Keeps the code visible as text for readers
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
 TARDIS v1.2.0 should be downloaded, installed, loaded, and ran in the following order. The basic idea is to 1) download package from Github repository 2) install & load it via devtools 3) run createTargetList and tardisPeaks in sequence. More details are given below.
 
 ## Download package from Github repository

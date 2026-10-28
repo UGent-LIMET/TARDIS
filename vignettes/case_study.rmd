@@ -15,10 +15,12 @@ editor_options:
     wrap: 72
 ---
 
-```{r "setup", include = FALSE}
+```{r setup, include=FALSE}
 knitr::opts_chunk$set(
-    collapse = TRUE,
-    comment = "#>"
+  eval = FALSE, # <--- This stops R from executing the code chunks
+  echo = TRUE,   # <--- Keeps the code visible as text for readers
+  collapse = TRUE,
+  comment = "#>"
 )
 ```
 

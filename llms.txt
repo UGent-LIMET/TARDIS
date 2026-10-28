@@ -104,7 +104,7 @@ changes. Derivative work must be available under the same terms.
 
 # Articles
 
-### Articles
+### All vignettes
 
 - [Case study: targeted metabolite detection using TARDIS in
   cardiovascular

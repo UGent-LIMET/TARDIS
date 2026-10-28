@@ -1,6 +1,6 @@
 # Articles
 
-### Articles
+### All vignettes
 
 - [Case study: targeted metabolite detection using TARDIS in
   cardiovascular

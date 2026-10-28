@@ -47,7 +47,7 @@ Load the package:
 
 **Read the vignettes** for a tutorial on how to use `TARDIS`
 
-Available online: <https://pablovgd.github.io/TARDIS/>
+Available online: <https://ugent-limet.github.io/TARDIS/>
 
 Or, if you installed with `build_vignettes = TRUE`
 
@@ -56,6 +56,8 @@ Or, if you installed with `build_vignettes = TRUE`
     RShowDoc("gui_tutorial",package = "TARDIS")
 
     RShowDoc("case_study",package = "TARDIS")
+    
+    RShowDoc("tardis_run_guidelines_eewon",package = "TARDIS")
 
 To launch the GUI in R:
 
@@ -69,5 +71,3 @@ To launch the GUI in R:
 As a summary, the GPLv3 license requires attribution, inclusion of
 copyright and license information, disclosure of source code and
 changes. Derivative work must be available under the same terms.
-
-2.  Pablo Vangeenderhuysen (2024)

@@ -1,5 +1,11 @@
 # Changelog
 
+## TARDIS 1.2
+
+### Changes in 1.2.0
+
+- Re-implemented the EIC retrieval, resulting in a significant speed-up
+
 ## TARDIS 1.1
 
 ### Changes in 1.1.2

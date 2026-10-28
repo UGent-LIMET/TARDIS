@@ -32,7 +32,7 @@ and loads MS data as `Spectra` objects so it's easily integrated with
 other tools of the *Rformassspectrometry* initiative.
 
 See
-[README](https://github.com/pablovgd/T.A.R.D.I.S./blob/main/README.md)
+[README](https://github.com/UGent-LIMET/TARDIS/blob/main/README.md)
 for installation instructions.
 
 In this vignette, a case study on publicly available biological data is 

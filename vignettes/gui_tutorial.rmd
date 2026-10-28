@@ -33,7 +33,7 @@ algorithm from the `xcms` package and loads MS data as `Spectra`
 objects so it's easily integrated with other tools of the
 *Rformassspectrometry* initiative.
 
-See [README](https://github.com/pablovgd/TARDIS/blob/main/README.md) for installation instructions.
+See [README](https://github.com/UGent-LIMET/TARDIS/blob/main/README.md) for installation instructions.
 
 This tutorial explains the basic functionality of `TARDIS` and how
 to use the Shiny GUI. It's advised to read this tutorial until the end before using `TARDIS` to understand how the tool works and what kind of input is needed.
@@ -323,5 +323,4 @@ knitr::include_graphics("vignette_data/screenshots/processing_done.png")
 
 `TARDIS` will receive periodical updates including improvements and/or new features based on the need of the users. If you encounter an error, or any other problem, feel free to create an issue on Github. Got an idea yourself to improve `TARDIS`? Feature requests are also more than welcome. 
 
-https://github.com/pablovgd/TARDIS/issues
-
+https://github.com/UGent-LIMET/TARDIS/issues

@@ -1,13 +1,10 @@
 url: https://ugent-limet.github.io/TARDIS/
-
 template:
   bootstrap: 5
-
 articles:
-  - title: Articles
-    navbar: Articles
-    contents:
-      - case_study
-      - gui_tutorial
-      - quick_start
-      - tardis_run_guidelines_eewon
+- contents:
+  - case_study
+  - gui_tutorial
+  - quick_start
+  - tardis_run_guidelines_eewon
+

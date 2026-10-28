@@ -47,7 +47,7 @@ tardisPeaks(
 - dbData:
 
   Output of
-  [`createTargetList()`](https://pablovgd.github.io/TARDIS/reference/createTargetList.md)
+  [`createTargetList()`](https://ugent-limet.github.io/TARDIS/reference/createTargetList.md)
 
 - ppm:
 
@@ -114,7 +114,8 @@ tardisPeaks(
 
 - smoothing:
 
-  `logical(1)` Smooth the peaks with `sgolayfilt()`
+  `logical(1)` Smooth the peaks with
+  [`sgolayfilt()`](https://rdrr.io/pkg/signal/man/sgolayfilt.html)
 
 - max_int_filter:
 

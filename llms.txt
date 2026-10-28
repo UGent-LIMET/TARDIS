@@ -47,7 +47,7 @@ Load the package:
 
 **Read the vignettes** for a tutorial on how to use `TARDIS`
 
-Available online: <https://pablovgd.github.io/TARDIS/>
+Available online: <https://ugent-limet.github.io/TARDIS/index.html>
 
 Or, if you installed with `build_vignettes = TRUE`
 
@@ -70,52 +70,48 @@ As a summary, the GPLv3 license requires attribution, inclusion of
 copyright and license information, disclosure of source code and
 changes. Derivative work must be available under the same terms.
 
-2.  Pablo Vangeenderhuysen (2024)
-
 # Package index
 
 ## All functions
 
-- [`checkScans()`](https://pablovgd.github.io/TARDIS/reference/checkScans.md)
+- [`checkScans()`](https://ugent-limet.github.io/TARDIS/reference/checkScans.md)
   : Check if any samples are missing spectra
-- [`createRanges()`](https://pablovgd.github.io/TARDIS/reference/createRanges.md)
+- [`createRanges()`](https://ugent-limet.github.io/TARDIS/reference/createRanges.md)
   : Create m/z and retention time ranges for target compounds
-- [`createTargetList()`](https://pablovgd.github.io/TARDIS/reference/createTargetList.md)
+- [`createTargetList()`](https://ugent-limet.github.io/TARDIS/reference/createTargetList.md)
   : Create target list
-- [`extract_eic()`](https://pablovgd.github.io/TARDIS/reference/extract_eic.md)
-  : Function to extract EIC from Spectra object
-- [`filterSingle()`](https://pablovgd.github.io/TARDIS/reference/filterSingle.md)
-  : filter Spectra to single peak in single sample
-- [`find_peak_points()`](https://pablovgd.github.io/TARDIS/reference/find_peak_points.md)
+- [`find_peak_points()`](https://ugent-limet.github.io/TARDIS/reference/find_peak_points.md)
   : Simple peak detection algorithm on chromatographic data
-- [`find_peak_points_orig()`](https://pablovgd.github.io/TARDIS/reference/find_peak_points_orig.md)
+- [`find_peak_points_orig()`](https://ugent-limet.github.io/TARDIS/reference/find_peak_points_orig.md)
   : Find peak points
-- [`integrateSinglePeak()`](https://pablovgd.github.io/TARDIS/reference/integrateSinglePeak.md)
+- [`integrateSinglePeak()`](https://ugent-limet.github.io/TARDIS/reference/integrateSinglePeak.md)
   : Integrate single chromatographic peak in single file
-- [`plotDiagnostic()`](https://pablovgd.github.io/TARDIS/reference/plotDiagnostic.md)
+- [`plotDiagnostic()`](https://ugent-limet.github.io/TARDIS/reference/plotDiagnostic.md)
   : Diagnostic plots
-- [`plotQCs()`](https://pablovgd.github.io/TARDIS/reference/plotQCs.md)
+- [`plotQCs()`](https://ugent-limet.github.io/TARDIS/reference/plotQCs.md)
   : Function to make plots of QC samples
-- [`plotSamples()`](https://pablovgd.github.io/TARDIS/reference/plotSamples.md)
+- [`plotSamples()`](https://ugent-limet.github.io/TARDIS/reference/plotSamples.md)
   : Function to make plots of samples
-- [`qscoreCalculator()`](https://pablovgd.github.io/TARDIS/reference/qscoreCalculator.md)
+- [`qscoreCalculator()`](https://ugent-limet.github.io/TARDIS/reference/qscoreCalculator.md)
   : qcoreCalculator
-- [`renameRawFiles()`](https://pablovgd.github.io/TARDIS/reference/renameRawFiles.md)
+- [`renameRawFiles()`](https://ugent-limet.github.io/TARDIS/reference/renameRawFiles.md)
   : Rename Thermo .raw files Script to read XCalibur sequence list and
   rename files according to run type (sample, QC, blank, etc...)
-- [`runTardis()`](https://pablovgd.github.io/TARDIS/reference/runTardis.md)
+- [`runTardis()`](https://ugent-limet.github.io/TARDIS/reference/runTardis.md)
   : Run T.A.R.D.I.S.
-- [`tardisPeaks()`](https://pablovgd.github.io/TARDIS/reference/tardisPeaks.md)
+- [`tardisPeaks()`](https://ugent-limet.github.io/TARDIS/reference/tardisPeaks.md)
   : TARDIS Peak Detection
 
 # Articles
 
-### All vignettes
+### Articles
 
 - [Case study: targeted metabolite detection using TARDIS in
   cardiovascular
-  disease](https://pablovgd.github.io/TARDIS/articles/case_study.md):
+  disease](https://ugent-limet.github.io/TARDIS/articles/case_study.md):
 - [Targeted peak integration of LC-MS data using
-  TARDIS](https://pablovgd.github.io/TARDIS/articles/gui_tutorial.md):
+  TARDIS](https://ugent-limet.github.io/TARDIS/articles/gui_tutorial.md):
 - [Quick start for targeted peak integration of LC-MS data using
-  TARDIS](https://pablovgd.github.io/TARDIS/articles/quick_start.md):
+  TARDIS](https://ugent-limet.github.io/TARDIS/articles/quick_start.md):
+- [TARDIS 1.2.0 run guidelines (October
+  2026)](https://ugent-limet.github.io/TARDIS/articles/tardis_run_guidelines_eewon.md):

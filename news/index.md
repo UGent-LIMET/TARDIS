@@ -68,11 +68,11 @@
 ### Changes in 0.1.1
 
 - Refactor
-  [`find_peak_points()`](https://pablovgd.github.io/TARDIS/reference/find_peak_points.md)
+  [`find_peak_points()`](https://ugent-limet.github.io/TARDIS/reference/find_peak_points.md)
   and add unit tests and documentation.
 - General improvement of code readability and documentation.
 - Get correct rt of ISTD for RT alignment
 - New function
-  [`checkScans()`](https://pablovgd.github.io/TARDIS/reference/checkScans.md)
+  [`checkScans()`](https://ugent-limet.github.io/TARDIS/reference/checkScans.md)
   to check faulty input files that miss scans.
 - Setting intensity filter to zero disables to filter to retain `NA`.

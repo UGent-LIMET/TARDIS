@@ -9,8 +9,7 @@ established retention time correction algorithm from the `xcms` package
 and loads MS data as `Spectra` objects so it’s easily integrated with
 other tools of the *Rformassspectrometry* initiative.
 
-See
-[README](https://github.com/pablovgd/T.A.R.D.I.S./blob/main/README.md)
+See [README](https://github.com/UGent-LIMET/TARDIS/blob/main/README.md)
 for installation instructions.
 
 In this vignette, a case study on publicly available biological data is
@@ -70,7 +69,7 @@ Extra columns can be included in the file, but will be ignored by
 
 An input file (either .xlsx or .csv) can be converted to a correct
 data.frame using the
-[`createTargetList()`](https://pablovgd.github.io/TARDIS/reference/createTargetList.md)
+[`createTargetList()`](https://ugent-limet.github.io/TARDIS/reference/createTargetList.md)
 function. Input parameters needed are: the path to the file, the
 patterns for positive and negative ionization, the polarity of interest,
 the columnn that contains the ionization mode and the other columns of
@@ -83,19 +82,10 @@ input <- read.csv2("vignette_data/bio_targets.csv", sep = ",")
 kableExtra::kable(head(input))
 ```
 
-| ID | name | abbreviation | formula | POS | NEG | RT | data_set | sample | operator | version | quality_NEG | quality_POS | mz | mzmin | mzmax | rtmin | rtmax | rt |
-|---:|:---|:---|:---|:---|:---|---:|:---|:---|:---|---:|:---|:---|:---|:---|:---|---:|---:|:---|
-| 1 | Carnitine (D3) | carnitine_d3 | 164.124 | \[M+H\]+ | NA | 61 | 2019_11_matrix_effect | serum | Mar Garcia-Aloy | 2 | 3_bad | 2_medium | 165.131276 | 165.126276 | 165.136276 | 51 | 71 | 1.016666667 |
-| 2 | Creatinine (N-Methhyl_D3) | creatinine_methyl_d3 | 116.0777 | \[M+H\]+ | \[M-H\]- | 126 | 2019_11_matrix_effect | serum | Mar Garcia-Aloy | 2 | 2_medium | 2_medium | 117.084976 | 117.079976 | 117.089976 | 116 | 136 | 2.1 |
-| 3 | Glucose (6,6-D2) | glucose_d2 | 182.0759 | \[M+Na\]+ | \[M+CHO2\]- | 166 | 2019_11_matrix_effect | serum | Mar Garcia-Aloy | 2 | 1_good | 2_medium | 205.06512 | 205.06012 | 205.07012 | 156 | 176 | 2.766666667 |
-| 4 | L-Alanine (13C3, 99%; 15N, 99%) | alanine_13C_15N | 93.0548 | \[M+H\]+ | \[M-H\]- | 167 | 2019_11_matrix_effect | serum | Mar Garcia-Aloy | 2 | 2_medium | 1_good | 94.062076 | 94.057076 | 94.067076 | 157 | 177 | 2.783333333 |
-| 5 | L-Arginine HCl (13C6, 99%; 15N4, 99%) | arginine_13C_15N | 184.1199 | \[M+H\]+ | \[M-H\]- | 183 | 2019_11_matrix_effect | serum | Mar Garcia-Aloy | 2 | 0_perfect | 0_perfect | 185.127176 | 185.122176 | 185.132176 | 173 | 193 | 3.05 |
-| 6 | L-Aspartic acid (13C4, 99%; 15N, 99%) | aspartic_13C_15N | 138.048 | \[M+H\]+ | \[M-H\]- | 179 | 2019_11_matrix_effect | serum | Mar Garcia-Aloy | 2 | 1_good | 1_good | 139.055276 | 139.050276 | 139.060276 | 169 | 189 | 2.983333333 |
-
 The target `data.frame` is created using
-[`createTargetList()`](https://pablovgd.github.io/TARDIS/reference/createTargetList.md).
+[`createTargetList()`](https://ugent-limet.github.io/TARDIS/reference/createTargetList.md).
 For more info on how to use the function, check the help page:
-[`?createTargetList`](https://pablovgd.github.io/TARDIS/reference/createTargetList.md)
+[`?createTargetList`](https://ugent-limet.github.io/TARDIS/reference/createTargetList.md)
 
 Our biomarkers are defined as:
 
@@ -111,15 +101,6 @@ targets <- createTargetList("vignette_data/bio_targets.csv",
 )
 kableExtra::kable(targets[21:26, ])
 ```
-
-|     | ID  | NAME                  |      m/z |        tr |
-|:----|:----|:----------------------|---------:|----------:|
-| 21  | 21  | Unknown_1             | 182.0749 |  34.83789 |
-| 22  | 22  | Caffeine              | 195.0877 |  32.65668 |
-| 23  | 23  | BENZYL METHYL SULFIDE | 161.0400 | 162.13668 |
-| 24  | 24  | Anthranilic acid      | 138.0547 | 148.39599 |
-| 25  | 25  | Isoproturon           | 229.1299 | 181.08828 |
-| 26  | 26  | Unknown_2             | 560.3603 |  33.54917 |
 
 Below we extract our dataset from the MetaboLigths database and load it
 as an MsExperiment object. For more information on how to load your data
@@ -150,11 +131,6 @@ lcms1 <- readMsObject(MsExperiment(),
 ``` r
 
 lcms1
-#> Object of class MsExperiment 
-#>  Spectra: MS1 (17210) 
-#>  Experiment data: 10 sample(s)
-#>  Sample data links:
-#>   - spectra: 10 sample(s) to 17210 element(s).
 ```
 
 Simplifying the sampleData:
@@ -189,19 +165,6 @@ sampleData(lcms1)[, c(
     kableExtra::kable(format = "pipe")
 ```
 
-| spectraOrigin | phenotype | sample_name | type | injection_index |
-|:---|:---|:---|:---|---:|
-| FILES/MS_QC_POOL_1_POS.mzML | QC | POOL1 | QC | 1 |
-| FILES/MS_A_POS.mzML | CVD | A | experimental sample | 2 |
-| FILES/MS_B_POS.mzML | CTR | B | experimental sample | 3 |
-| FILES/MS_QC_POOL_2_POS.mzML | QC | POOL2 | QC | 4 |
-| FILES/MS_C_POS.mzML | CTR | C | experimental sample | 5 |
-| FILES/MS_D_POS.mzML | CVD | D | experimental sample | 6 |
-| FILES/MS_QC_POOL_3_POS.mzML | QC | POOL3 | QC | 7 |
-| FILES/MS_E_POS.mzML | CTR | E | experimental sample | 8 |
-| FILES/MS_F_POS.mzML | CVD | F | experimental sample | 9 |
-| FILES/MS_QC_POOL_4_POS.mzML | QC | POOL4 | QC | 10 |
-
 **IMPORTANT!** The sample type column (indicating the QCs) has to be
 named `type`. and the column indicating the file has to be named
 `spectraOrigin`.
@@ -216,7 +179,7 @@ the `tardisPeaks` function.
 
 For more details on the inputs of the function, please read the help
 page
-[`?tardisPeaks`](https://pablovgd.github.io/TARDIS/reference/tardisPeaks.md)
+[`?tardisPeaks`](https://ugent-limet.github.io/TARDIS/reference/tardisPeaks.md)
 
 To limit the running time of this vignette, we limit the internal
 standard targets to five, which should be enough for good RT alignment,
@@ -249,12 +212,9 @@ results <- tardisPeaks(
     int_std_id = as.character(1:20),
     screening_mode = TRUE
 )
-#> Performing retention time alignment using 5 anchor peaks.
 ```
 
 The resulting EICs are saved in the output folder and can be inspected.
-
-![](vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_7.png)![](vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_8.png)![](vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_14.png)![](vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_15.png)![](vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_17.png)![](vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_21.png)![](vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_22.png)![](vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_23.png)![](vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_24.png)![](vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_25.png)![](vignette_data/output/case/screening/Diagnostic_QCs_Batch_1/Component_26.png)
 
 Based on the EICs we can see that detection, RT alignment and
 integration of target peaks in QC runs were successful. However, the
@@ -280,13 +240,6 @@ results <- tardisPeaks(
     int_std_id = as.character(1:20),
     screening_mode = FALSE
 )
-#> Performing retention time alignment using 5 anchor peaks.
-#> Aligning sample number 2 against subset ... OK
-#> Aligning sample number 3 against subset ... OK
-#> Aligning sample number 5 against subset ... OK
-#> Aligning sample number 6 against subset ... OK
-#> Aligning sample number 8 against subset ... OK
-#> Aligning sample number 9 against subset ... OK
 ```
 
 ## Results
@@ -301,29 +254,11 @@ AUC <- results[[1]]
 kableExtra::kable(head(AUC))
 ```
 
-| Component | MS_A_POS.mzML | MS_B_POS.mzML | MS_C_POS.mzML | MS_D_POS.mzML | MS_E_POS.mzML | MS_F_POS.mzML | MS_QC_POOL_1_POS.mzML | MS_QC_POOL_2_POS.mzML | MS_QC_POOL_3_POS.mzML | MS_QC_POOL_4_POS.mzML |
-|:---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 14 | 16550.633 | 18002.5842 | 16543.549 | 17354.10495 | 19096.568 | 17914.601 | 19826.2410 | 20773.350 | 21403.3610 | 20310.1275 |
-| 15 | 17702.727 | 18787.2227 | 16358.943 | 20086.53309 | 19177.793 | 11104.850 | 18093.4052 | 17585.089 | 19031.7096 | 18606.9053 |
-| 17 | 9696.061 | 10043.8735 | 11226.918 | 10081.11645 | 10586.717 | 11158.971 | 10528.2346 | 10773.937 | 10307.5951 | 10316.8433 |
-| 21 | NA | 3573.0464 | 2990.853 | 47.03151 | 4260.996 | NA | 2190.4639 | 2006.222 | 1747.0690 | 1744.6098 |
-| 22 | 827.471 | 79999.0135 | 117235.118 | 2204.12719 | 166585.610 | 1153.845 | 36766.4234 | 40371.478 | 40079.2350 | 39741.2307 |
-| 23 | 91.981 | 980.2109 | 632.872 | NA | 1981.873 | NA | 660.7771 | 536.172 | 715.3061 | 672.9312 |
-
 ``` r
 
 feat_table <- results[[2]]
 kableExtra::kable(head(feat_table))
 ```
-
-| Component | AUC | MaxInt | SNR | peak_cor | foundRT | pop | ID | NAME | m.z | tr | mean | na.rm | trold |
-|:---|---:|---:|---:|---:|---:|---:|:---|:---|---:|---:|---:|:---|---:|
-| 14 | 20578.2698 | 12635.3442 | 16.64761 | 0.9696404 | 159.81106 | 18.00 | 14 | L-Methionine (13C5, 99%; 15N, 99%) | 156.0722 | 159.81106 | 159.81106 | TRUE | 161.00000 |
-| 15 | 18329.2773 | 10256.7736 | 13.48757 | 0.9436183 | 151.52398 | 22.50 | 15 | L-Phenylalanine (13C9, 99%; 15N, 99%) | 176.1135 | 151.52398 | 151.52398 | TRUE | 153.00000 |
-| 17 | 10481.6524 | 6464.6150 | 12.29799 | 0.8172832 | 179.14857 | 26.25 | 17 | L-Serine (13C3, 99%; 15N, 99%) | 110.0570 | 179.14857 | 179.14857 | TRUE | 178.00000 |
-| 21 | 1922.0912 | 906.1764 | 12.22469 | 0.8899200 | 34.89898 | 19.75 | 21 | Unknown_1 | 182.0749 | 34.89898 | 34.89898 | TRUE | 34.83789 |
-| 22 | 39239.5918 | 27834.8161 | 31.63514 | 0.9806625 | 32.87623 | 14.00 | 22 | Caffeine | 195.0877 | 32.87623 | 32.87623 | TRUE | 32.65668 |
-| 23 | 646.2966 | 392.2353 | 17.00577 | 0.9647597 | 162.04193 | 14.50 | 23 | BENZYL METHYL SULFIDE | 161.0400 | 162.04193 | 162.04193 | TRUE | 162.13668 |
 
 Other results include tables with the other metrics (Max. Int., SNR,
 peak_cor and points over the peak) and are saved into the output folder
@@ -341,15 +276,6 @@ pop <- read.csv("vignette_data/output/case/pop_table.csv", check.names = FALSE)[
 
 kableExtra::kable(head(pop))
 ```
-
-| Component | MS_A_POS.mzML | MS_B_POS.mzML | MS_C_POS.mzML | MS_D_POS.mzML | MS_E_POS.mzML | MS_F_POS.mzML | MS_QC_POOL_1_POS.mzML | MS_QC_POOL_2_POS.mzML | MS_QC_POOL_3_POS.mzML | MS_QC_POOL_4_POS.mzML |
-|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 14 | 22 | 22 | 26 | 25 | 19 | 20 | 19 | 18 | 17 | 18 |
-| 15 | 24 | 24 | 25 | 23 | 24 | 23 | 25 | 20 | 22 | 23 |
-| 17 | 16 | 23 | 19 | 18 | 15 | 14 | 30 | 18 | 33 | 24 |
-| 21 | NA | 13 | 14 | 7 | 13 | NA | 27 | 21 | 16 | 15 |
-| 22 | 10 | 14 | 13 | 13 | 14 | 13 | 14 | 14 | 15 | 13 |
-| 23 | 11 | 22 | 11 | NA | 25 | NA | 15 | 12 | 16 | 15 |
 
 ## Exploratory data analysis
 
@@ -407,8 +333,6 @@ ggplot(pca_df, aes(x = PC1, y = PC2, color = phenotype)) +
     scale_color_manual(values = c("red", "blue", "green")) # Customize colors if needed
 ```
 
-![](case_study_files/figure-html/unnamed-chunk-15-1.png)
-
 Results are as expected:
 
 - QC samples cluster together, indicating little technical variance in
@@ -464,8 +388,6 @@ ggplot(pca_df, aes(x = PC1, y = PC2, color = phenotype)) +
     scale_color_manual(values = c("blue", "red", "green")) # Customize colors if needed
 ```
 
-![](case_study_files/figure-html/unnamed-chunk-16-1.png)
-
 ### Differential abundance analysis
 
 In this section we perform differential abundance analysis to
@@ -514,8 +436,6 @@ ggplot(boxdata, aes(x = feature, y = log2(abundance), fill = phenotype)) +
     scale_fill_manual(values = c("blue", "red"))
 ```
 
-![](case_study_files/figure-html/unnamed-chunk-18-1.png)
-
 To test the differences for each biomarker, we use to `wilcox.test`
 function. From the boxplots above, we known that the biomarkers are
 underrepresented in the CVD phenotype, hence, we use the
@@ -534,14 +454,6 @@ for (i in 1:5) {
 pres$adj_p_value <- p.adjust(pres$p_value, method = "fdr")
 knitr::kable(pres)
 ```
-
-| Feature | p_value | adj_p_value |
-|:--------|--------:|------------:|
-| 21      |    0.05 |        0.05 |
-| 22      |    0.05 |        0.05 |
-| 23      |    0.05 |        0.05 |
-| 24      |    0.05 |        0.05 |
-| 25      |    0.05 |        0.05 |
 
 ## Conclusion
 

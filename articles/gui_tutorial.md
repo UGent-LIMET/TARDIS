@@ -10,8 +10,8 @@ use of an established retention time correction algorithm from the
 `xcms` package and loads MS data as `Spectra` objects so it’s easily
 integrated with other tools of the *Rformassspectrometry* initiative.
 
-See [README](https://github.com/pablovgd/TARDIS/blob/main/README.md) for
-installation instructions.
+See [README](https://github.com/UGent-LIMET/TARDIS/blob/main/README.md)
+for installation instructions.
 
 This tutorial explains the basic functionality of `TARDIS` and how to
 use the Shiny GUI. It’s advised to read this tutorial until the end
@@ -60,7 +60,7 @@ Extra columns can be included in the file, but will be ignored by
 
 An input file (either .xlsx or .csv) can be converted to a correct
 data.frame using the
-[`createTargetList()`](https://pablovgd.github.io/TARDIS/reference/createTargetList.md)
+[`createTargetList()`](https://ugent-limet.github.io/TARDIS/reference/createTargetList.md)
 function (not needed if using the GUI). Input parameters needed are: the
 path to the file, the patterns for positive and negative ionization, the
 polarity of interest, the columnn that contains the ionization mode and
@@ -69,15 +69,6 @@ the other columns of interest.
 An example:
 
 Input file looks like this (first 6 rows):
-
-|  id | name                        | mz                 | ion | rt   |
-|----:|:----------------------------|:-------------------|:----|:-----|
-|  49 | Valeric acid                | 103.07536          | \+  | 8.4  |
-|  76 | Malic acid                  | 133.01424          | \-  | 1.21 |
-|  82 | Pyruvic acid                | 87.008769999999998 | \-  | 1.48 |
-|  86 | (R)-(+)-Methylsuccinic acid | 133.04954000000001 | \+  | 4.2  |
-|  89 | Azelaic acid                | 187.09757999999999 | \-  | 8.77 |
-|  91 | Sebacic acid                | 201.11322999999999 | \-  | 9    |
 
 The target `data.frame` is created:
 
@@ -93,15 +84,6 @@ targets <- createTargetList("vignette_data/targets.xlsx",
 
 kableExtra::kable(head(targets))
 ```
-
-|     | ID  | NAME                        |       m/z |    tr |
-|:----|:----|:----------------------------|----------:|------:|
-| 1   | 49  | Valeric acid                | 103.07536 | 504.0 |
-| 4   | 86  | (R)-(+)-Methylsuccinic acid | 133.04954 | 252.0 |
-| 8   | 98  | Urocanic acid               | 139.05020 |  79.8 |
-| 9   | 169 | L-Alanine                   |  90.05496 |  51.6 |
-| 10  | 170 | L-Valine                    | 118.08626 |  78.0 |
-| 11  | 171 | L-Leucine                   | 132.10191 | 132.0 |
 
 #### Screening and adjusting expected retention time
 
@@ -159,10 +141,6 @@ parameter. For more details:
 Plots below show results for two components in 5 QC runs without RT
 correction (left) and with RT correction (right).
 
-![](vignette_data/plots/not_aligned_180.png)![](vignette_data/plots/aligned_180.png)
-
-![](vignette_data/plots/not_aligned_181.png)![](vignette_data/plots/aligned_181.png)
-
 #### Peak detection in QC’s and adjusting expected RT
 
 Based on the expected RT, target compounds are integrated in quality
@@ -185,16 +163,12 @@ will detect that the peak apex is now closer to a RT of 440 seconds (7.3
 minutes) and thus when finally processing that batch the expected RT for
 that compound will be approximately 440 seconds instead of 446 seconds.
 
-![](vignette_data/plots/rtshift1.png)![](vignette_data/plots/rtshift2.png)
-
 #### Peak detection in samples
 
 Finally, after setting the new expected RT, peaks are integrated in all
 samples (and QCs). The user can choose to get plots for all components
 in all samples and QCs (plotted in groups of 5 samples, see example
 below).
-
-![](vignette_data/plots/sample_plot.png)
 
 #### Quality metrics and output files
 
@@ -239,8 +213,6 @@ runTardis()
 
 The Shiny GUI will open in an RStudio window or your browser:
 
-![](vignette_data/screenshots/create_list.png)
-
 #### Creating a target list
 
 In the tab “Create target list”, one can adjust the following
@@ -257,8 +229,6 @@ parameters:
 
 Pressing “Create Target List” after filling in the parameter fields will
 create a target list and pass it through for the next part.
-
-![](vignette_data/screenshots/list_created.png)
 
 #### Targeted peak detection
 
@@ -315,17 +285,9 @@ parameters:
   peaks. Peaks with a maximum intensity less than the threshold are
   excluded from the results (NA in results table).
 
-![](vignette_data/screenshots/target_peak_detection.png)
-
-![](vignette_data/screenshots/input.png)
-
 During processing, wait patiently:
 
-![](vignette_data/screenshots/processing.png)
-
 When processing is finished, a message will appear:
-
-![](vignette_data/screenshots/processing_done.png)
 
 ## Issues and feature requests
 
@@ -335,4 +297,4 @@ or any other problem, feel free to create an issue on Github. Got an
 idea yourself to improve `TARDIS`? Feature requests are also more than
 welcome.
 
-<https://github.com/pablovgd/TARDIS/issues>
+<https://github.com/UGent-LIMET/TARDIS/issues>

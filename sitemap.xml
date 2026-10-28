@@ -5,14 +5,13 @@
 <url><loc>https://ugent-limet.github.io/TARDIS/articles/gui_tutorial.html</loc></url>
 <url><loc>https://ugent-limet.github.io/TARDIS/articles/index.html</loc></url>
 <url><loc>https://ugent-limet.github.io/TARDIS/articles/quick_start.html</loc></url>
+<url><loc>https://ugent-limet.github.io/TARDIS/articles/tardis_run_guidelines_eewon.html</loc></url>
 <url><loc>https://ugent-limet.github.io/TARDIS/authors.html</loc></url>
 <url><loc>https://ugent-limet.github.io/TARDIS/index.html</loc></url>
 <url><loc>https://ugent-limet.github.io/TARDIS/news/index.html</loc></url>
 <url><loc>https://ugent-limet.github.io/TARDIS/reference/checkScans.html</loc></url>
 <url><loc>https://ugent-limet.github.io/TARDIS/reference/createRanges.html</loc></url>
 <url><loc>https://ugent-limet.github.io/TARDIS/reference/createTargetList.html</loc></url>
-<url><loc>https://ugent-limet.github.io/TARDIS/reference/extract_eic.html</loc></url>
-<url><loc>https://ugent-limet.github.io/TARDIS/reference/filterSingle.html</loc></url>
 <url><loc>https://ugent-limet.github.io/TARDIS/reference/find_peak_points.html</loc></url>
 <url><loc>https://ugent-limet.github.io/TARDIS/reference/find_peak_points_orig.html</loc></url>
 <url><loc>https://ugent-limet.github.io/TARDIS/reference/index.html</loc></url>
@@ -25,3 +24,4 @@
 <url><loc>https://ugent-limet.github.io/TARDIS/reference/runTardis.html</loc></url>
 <url><loc>https://ugent-limet.github.io/TARDIS/reference/tardisPeaks.html</loc></url>
 </urlset>
+

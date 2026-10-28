@@ -1,3 +1,5 @@
+# TARDIS 1.2.0 run guidelines (October 2026)
+
 TARDIS v1.2.0 should be downloaded, installed, loaded, and ran in the
 following order. The basic idea is to 1) download package from Github
 repository 2) install & load it via devtools 3) run createTargetList and
@@ -7,7 +9,7 @@ tardisPeaks in sequence. More details are given below.
 
 1.  Go to the repository page:
     <https://github.com/UGent-LIMET/TARDIS/tree/main>
-2.  On the top right: Click on Code -&gt; Local -&gt; Download ZIP
+2.  On the top right: Click on Code -\> Local -\> Download ZIP
 3.  Wait for the download to complete
 4.  Go to that zip file location, unzip it in a specific directory of
     your choice (this is where your TARDIS code is)
@@ -20,18 +22,21 @@ of them, we load them. Important: run it at the beginning every time you
 start TARDIS. This block has to be run first before all the other code
 in this script.
 
-    if (!require("tidyr")) install.packages("tidyr")
-    library("tidyr")
-    if (!require("dplyr")) install.packages("dplyr")
-    library("dplyr")
-    if (!require("xcms")) install.packages("xcms")
-    library("xcms")
-    if (!require("Spectra")) install.packages("Spectra")
-    library("Spectra")
-    if (!require("devtools")) install.packages("devtools")
-    library("devtools")
-    if (!require("MSnbase")) install.packages("MSnbase")
-    library("MSnbase")
+``` r
+
+if (!require("tidyr")) install.packages("tidyr")
+library("tidyr")
+if (!require("dplyr")) install.packages("dplyr")
+library("dplyr")
+if (!require("xcms")) install.packages("xcms")
+library("xcms")
+if (!require("Spectra")) install.packages("Spectra")
+library("Spectra")
+if (!require("devtools")) install.packages("devtools")
+library("devtools")
+if (!require("MSnbase")) install.packages("MSnbase")
+library("MSnbase")
+```
 
 Important: if you encounter error messages (not warnings) while doing
 this, you should not ignore them! Try to find out why that error
@@ -48,33 +53,35 @@ preferred way due to its simplicity and speed.
 1.  If you are installing TARDIS the first time in your computer: just
     install and load it.
 
-<!-- -->
+``` r
 
-    # install
-    devtools::install("C:/Users/TARDIS-v1.2.0/")  # example path to the TARDIS folder (created in the first step of this script)
-    # load
-    devtools::load_all("C:/Users/TARDIS-v1.2.0/")  # example path to the TARDIS folder (created in the first step of this script)
+# install
+devtools::install("C:/Users/TARDIS-v1.2.0/")  # example path to the TARDIS folder (created in the first step of this script)
+# load
+devtools::load_all("C:/Users/TARDIS-v1.2.0/")  # example path to the TARDIS folder (created in the first step of this script)
+```
 
-1.  If you have changed the code in the TARDIS package, or you want to
+2.  If you have changed the code in the TARDIS package, or you want to
     use another version of the package instead of the already existing
     one: you need to remove the existing TARDIS package first and then
     install & load the next one, to avoid conflict. If you don’t remove
     the existing TARDIS package, sometimes the code just runs the old
     code.
 
-<!-- -->
+``` r
 
-    remove.packages("TARDIS")
-    # install
-    devtools::install("C:/Users/TARDIS-v1.2.0/")  # example path to the TARDIS folder (created in the first step of this script)
-    # load
-    devtools::load_all("C:/Users/TARDIS-v1.2.0/")  # example path to the TARDIS folder (created in the first step of this script)
+remove.packages("TARDIS")
+# install
+devtools::install("C:/Users/TARDIS-v1.2.0/")  # example path to the TARDIS folder (created in the first step of this script)
+# load
+devtools::load_all("C:/Users/TARDIS-v1.2.0/")  # example path to the TARDIS folder (created in the first step of this script)
+```
 
 If you have installed the package once in your computer
 (devtools::install), it will not go away unless you explicitly delete
 it. It stays in the C drive library folder. Installing is only necessary
 once at the beginning. Then, you only need to load the package
-(devtools::load\_all) to use it from next time.
+(devtools::load_all) to use it from next time.
 
 Important: if you encounter error messages (not warnings) while doing
 this, you should not ignore them! Try to find out why that error

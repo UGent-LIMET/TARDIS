@@ -13,12 +13,13 @@ createRanges(msData, dbData, ppm, rtdev)
 
 - msData:
 
-  `MsExperiment()` object
+  [`MsExperiment()`](https://rdrr.io/pkg/MsExperiment/man/MsExperiment.html)
+  object
 
 - dbData:
 
   target database, output of
-  [`createTargetList()`](https://pablovgd.github.io/TARDIS/reference/createTargetList.md)
+  [`createTargetList()`](https://ugent-limet.github.io/TARDIS/reference/createTargetList.md)
 
 - ppm:
 

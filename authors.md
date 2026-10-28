@@ -11,8 +11,7 @@
 - **Matthijs Vynck**. Contributor.
   [](https://orcid.org/0000-0001-9875-385X)
 
-- **Eewon Tai**. Contributor. 
-  [](https://orcid.org/0009-0009-8829-0308)
+- **Eewon Tai**. Contributor. [](https://orcid.org/0009-0009-8829-0308)
 
 ## Citation
 

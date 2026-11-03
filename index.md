@@ -18,19 +18,13 @@ line in your Mac OS terminal:
 
     sudo xcode-select --install
 
-For the latest version of `TARDIS`, `BiocManager` **version 3.20** is
-required: <https://www.bioconductor.org/install/>
-
 In R, run:
 
-    if (!require("devtools", quietly = TRUE))
-        install.packages("devtools")
+    pak::pak("UGent-LIMET/TARDIS")
 
-    if (!require("BiocManager", quietly = TRUE))
-        install.packages("BiocManager")
+If asked do you want to continue, type y:
 
-    BiocManager::install("UGent-LIMET/TARDIS",build_vignettes = FALSE,
-      dependencies=TRUE)
+    ? Do you want to continue (Y/n) y
 
 Since the package contains some example data, connection timeout is
 often an issue. You can increase your timeout setting in R using:
@@ -47,7 +41,7 @@ Load the package:
 
 **Read the vignettes** for a tutorial on how to use `TARDIS`
 
-Available online: <https://ugent-limet.github.io/TARDIS/index.html>
+Available online: <https://ugent-limet.github.io/TARDIS/>
 
 Or, if you installed with `build_vignettes = TRUE`
 

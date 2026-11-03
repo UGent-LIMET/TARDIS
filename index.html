@@ -66,16 +66,10 @@
 <p><a href="https://cran.r-project.org/bin/windows/Rtools/rtools44/rtools.html" class="external-link uri">https://cran.r-project.org/bin/windows/Rtools/rtools44/rtools.html</a></p>
 <p>For <strong>Mac</strong> users, please install Xcode and a GNU Fortran compiler, see: <a href="https://mac.r-project.org/tools/index.html" class="external-link uri">https://mac.r-project.org/tools/index.html</a> For Xcode, you can run this line in your Mac OS terminal:</p>
 <pre><code>sudo xcode-select --install</code></pre>
-<p>For the latest version of <code>TARDIS</code>, <code>BiocManager</code> <strong>version 3.20</strong> is required: <a href="https://www.bioconductor.org/install/" class="external-link uri">https://www.bioconductor.org/install/</a></p>
 <p>In R, run:</p>
-<pre><code><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="st"><a href="https://devtools.r-lib.org/" class="external-link">"devtools"</a></span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="st"><a href="https://bioconductor.github.io/BiocManager/" class="external-link">"BiocManager"</a></span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"BiocManager"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"UGent-LIMET/TARDIS"</span>,build_vignettes <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  dependencies<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre>
+<pre><code><span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"UGent-LIMET/TARDIS"</span><span class="op">)</span></span></code></pre>
+<p>If asked do you want to continue, type y:</p>
+<pre><code>? Do you want to continue (Y/n) y</code></pre>
 <p>Since the package contains some example data, connection timeout is often an issue. You can increase your timeout setting in R using:</p>
 <pre><code><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>timeout <span class="op">=</span> <span class="st">"300"</span><span class="op">)</span></span></code></pre>
 <p>The number indicates the timeout setting in seconds.</p>
@@ -86,7 +80,7 @@
 <p>Load the package:</p>
 <pre><code><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ugent-limet.github.io/TARDIS/">TARDIS</a></span><span class="op">)</span></span></code></pre>
 <p><strong>Read the vignettes</strong> for a tutorial on how to use <code>TARDIS</code></p>
-<p>Available online: <a href="https://ugent-limet.github.io/TARDIS/index.html" class="uri">https://ugent-limet.github.io/TARDIS/index.html</a></p>
+<p>Available online: <a href="https://ugent-limet.github.io/TARDIS/" class="uri">https://ugent-limet.github.io/TARDIS/</a></p>
 <p>Or, if you installed with <code>build_vignettes = TRUE</code></p>
 <pre><code><span><span class="fu"><a href="https://rdrr.io/r/utils/RShowDoc.html" class="external-link">RShowDoc</a></span><span class="op">(</span><span class="st">"quick_start"</span>,package <span class="op">=</span> <span class="st">"TARDIS"</span><span class="op">)</span></span></code></pre>
 <pre><code><span><span class="fu"><a href="https://rdrr.io/r/utils/RShowDoc.html" class="external-link">RShowDoc</a></span><span class="op">(</span><span class="st">"gui_tutorial"</span>,package <span class="op">=</span> <span class="st">"TARDIS"</span><span class="op">)</span></span></code></pre>

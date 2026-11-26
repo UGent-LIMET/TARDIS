@@ -5,8 +5,11 @@ Authors@R:
     c(
      person(given = "Pablo", family = "Vangeenderhuysen",
 	   email = "pablovangeenderhuysen@ugent.be",
-	   role = c("aut", "cre"),
+	   role = c("aut"),
      	   comment = c(ORCID = "0000-0002-5492-6904")),
+     person(given = "Laboratory of", family = "Integrative Metabolomics",
+	   email = "limet@ugent.be",
+	   role ="cre"),
      person(given = "Johannes", family = "Rainer",
 	   email = "johannes.rainer@eurac.edu",
 	   role ="ctb",

@@ -2,8 +2,10 @@
 
 ## Authors
 
-- **Pablo Vangeenderhuysen**. Author, maintainer.
+- **Pablo Vangeenderhuysen**. Author.
   [](https://orcid.org/0000-0002-5492-6904)
+
+- **Laboratory of Integrative Metabolomics**. Maintainer.
 
 - **Johannes Rainer**. Contributor.
   [](https://orcid.org/0000-0002-6977-7147)
